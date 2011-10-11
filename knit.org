@@ -1,0 +1,31 @@
+* Knit
+** Targets help
+Targets are specified in a _knit.coffee file as:
+
+exports.targets =
+  'result.js': ['./', 'coffee']
+  'app.css': ['./mystyles.less', 'less']
+  'more/': ['./other', 'knit']
+  'robots.txt': ['Disallow: *', 'string']
+  'favicon.ico': ['./resources/favicon.ico', 'file']
+
+In the above the more/ folder would need to have a _knit.coffee file
+in it.
+** Config help
+Config is specified in a _knit.coffee file as:
+
+exports.config =
+  coffee:
+    libs: []
+  less:
+    compress: false
+** TODO Make coffee compiler support specifying a specific source file
+Currently, only a directory of modules can be specified, we want to be
+able to specify an individual file. This would get automatically
+required by the resulting JavaScript file. Also, it would allow us to
+only include those modules which it depends on (using detective).
+** TODO Make Stitch module resolve dependencies using detective
+Only include those modules that the selected main source file actually
+depends on. (Dependency does something like this).
+** TODO Allow for variations of _knit.coffee (.knit, _knit probably)
+** TODO Allow specifying non-standard handlers in config file somehow.
