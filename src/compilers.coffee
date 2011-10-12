@@ -4,6 +4,8 @@ p = require 'path'
 getResources = (target, root, source, config) ->
   root = fs.realpathSync source
   knitPath = p.join root, "_knit"
+  # Refresh require cache (i.e. reload config)
+  delete require.cache[require.resolve knitPath]
   knitSpec = require knitPath
 
   configClone = {}

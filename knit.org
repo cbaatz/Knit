@@ -19,7 +19,6 @@ exports.config =
     libs: []
   less:
     compress: false
-** TODO Also auto-reload config from _knit file (but not targets)
 ** TODO Make coffee compiler support specifying a specific source file
 Currently, only a directory of modules can be specified, we want to be
 able to specify an individual file. This would get automatically
@@ -42,6 +41,9 @@ depends on (using detective).
 ** TODO Make Stitch module resolve dependencies using detective
 Only include those modules that the selected main source file actually
 depends on. (Dependency does something like this).
+** TODO Fix config parameter handling (compress doesn't work)
+Generally think through parameter handling (command line, settings,
+ENV vars, defaults).
 ** TODO Allow for variations of _knit.coffee (.knit, _knit probably)
 ** TODO Better error messages on missing _knit files
 ** TODO Default to compression when building and no compression when serving

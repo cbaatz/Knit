@@ -4,7 +4,7 @@ fs = require 'fs'
 program = require 'commander'
 compilers = require './compilers'
 
-VERSION = '0.1.3'
+VERSION = '0.1.4'
 
 program
   .version(VERSION)
@@ -25,11 +25,14 @@ program
     hasRun = true
 
     knitPath = program.knitPath or '.'
-    console.log "Building #{ if program.noCompress then 'un' else '' }compressed targets to filesystem..."
-    resources = compilers.knit '/', [knitPath, 'knit'], {compress: program.compress}
-
     config = require(p.join(knitPath, '_knit'))?.config
+
+    compress = program.compress ? config?.compress ? true
     buildRoot = config?.builder?.root or '.'
+
+    console.log "Building #{ if compress then '' else 'un' }compressed targets to filesystem..."
+    resources = compilers.knit '/', knitPath, knitPath, {compress: compress}
+
     builder.build buildRoot, resources
 
 program
@@ -39,17 +42,26 @@ program
     proxy = require './proxy'
     hasRun = true
 
+    # Main config file is fixed, the rest is reloaded dynamically
+    # every request.
     knitPath = program.knitPath or '.'
-    config = require(p.join(knitPath, '_knit'))?.config
-    serveRoot = config?.server?.root or '.'
-    serveRoot = p.resolve('/', serveRoot) # Ensure root starts with '/'
-    resources = compilers.knit serveRoot, [knitPath, 'knit'], {compress: program.compress}
+    configPath = p.join knitPath, '_knit'
+
+    resources = () ->
+      # Reload resource configuration from base config by walking the
+      # config files and generating the compile functions.
+      config = require(configPath)?.config
+      serveRoot = config?.server?.root or '.'
+      serveRoot = p.resolve('/', serveRoot) # Ensure root starts with '/'
+      compress = program.compress ? config?.compress ? false
+      compilers.knit serveRoot, knitPath, knitPath, { compress: compress }
+
     proxy
       .server(resources, program.proxyPort, program.proxyHost)
       .listen(program.port, program.host)
 
     console.log "Knit serving at #{ program.host }:#{ program.port }:"
-    for path, [mimeType, _] of resources
+    for path, [mimeType, _] of resources()
       do (path, [mimeType, _]) ->
         console.log "    #{ path } (as #{ mimeType })"
     console.log "Knit proxies all other requests to #{ program.proxyHost }:#{ program.proxyPort }."

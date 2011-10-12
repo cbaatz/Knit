@@ -2,8 +2,10 @@ http = require 'http'
 
 exports.server = (resources, port, host) ->
   http.createServer( (req, res) ->
-    if req.url of resources
-      [mimeType, compile] = resources[req.url]
+    # Configuration is reloaded every request
+    r = resources()
+    if req.url of r
+      [mimeType, compile] = r[req.url]
       compile (data) ->
         res.setHeader('Content-Type', mimeType)
         res.writeHead 200
