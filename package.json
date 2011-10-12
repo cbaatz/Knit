@@ -1,7 +1,7 @@
 {
     "name": "knit",
     "description": "Builder and server of static resources.",
-    "version": "0.1.4",
+    "version": "0.1.5",
     "author": "Carl Baatz",
     "engine" : [ "node >=0.4.12" ],
     "main" : "./lib/knit.js",

@@ -4,7 +4,7 @@ fs = require 'fs'
 program = require 'commander'
 compilers = require './compilers'
 
-VERSION = '0.1.4'
+VERSION = '0.1.5'
 
 program
   .version(VERSION)

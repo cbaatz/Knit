@@ -3,7 +3,7 @@
 Targets are specified in a _knit.coffee file as:
 
 exports.targets =
-  'result.js': ['./', 'coffee']
+  'result.js': ['./index', 'coffee']
   'app.css': ['./mystyles.less', 'less']
   'more/': ['./other', 'knit']
   'robots.txt': ['Disallow: *', 'string']
@@ -11,18 +11,11 @@ exports.targets =
 
 In the above the more/ folder would need to have a _knit.coffee file
 in it.
-** Config help
-Config is specified in a _knit.coffee file as:
 
-exports.config =
-  coffee:
-    libs: []
-  less:
-    compress: false
-** TODO Make coffee compiler support specifying a specific source file
-Currently, only a directory of modules can be specified, we want to be
-able to specify an individual file. This would get automatically
-required by the resulting JavaScript file.
+*** Coffee compilation
+'coffee' sources specify the main module to require on (after)
+loading. Note however, that currently all modules found in the folder
+are compiled even if they are not dependencies of the main module.
 
 This is important if we want to run some action only after the require
 function has been provided by the stitched scripts. For example:
@@ -35,9 +28,14 @@ Would usually result in an error, because the stiched scripts have not
 had time to execute to provide 'require'. Thus, the require usage
 should be written such that it is run from the stiched scripts when
 it has provided the require function.
+** Config help
+Config is specified in a _knit.coffee file as:
 
-Also, it would allow us to only include those modules which it
-depends on (using detective).
+exports.config =
+  coffee:
+    libs: []
+  less:
+    compress: false
 ** TODO Make Stitch module resolve dependencies using detective
 Only include those modules that the selected main source file actually
 depends on. (Dependency does something like this).

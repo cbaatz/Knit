@@ -10,11 +10,11 @@ Stitch       = require './hem/stitch'
 stitch       = require '../../assets/stitch'
 
 exports.getResources = (targetPath, root, source, config) ->
-  sourcePath = p.join root, source
+  sourcePath = p.dirname(p.join root, source)
   compress = config?.coffee?.compress ? true
   libraries = config?.coffee?.libraries ? []
   dependencies = config?.coffee?.dependencies ? []
-  main = config?.coffee?.main ? false
+  main = p.join p.dirname(source), p.basename(source, p.extname source)
   locals = [sourcePath]
   # Modules
   compiler = (messenger) ->
