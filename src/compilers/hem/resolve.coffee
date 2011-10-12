@@ -36,7 +36,7 @@ module.exports = (request, parent = repl) ->
     throw "Module '#{ request }' looks like a core NodeJS module; these are not supported."
 
   # Find package root relative to localModules folder
-  while dir not in invalidDirs and dir not in paths
+  while dir not in invalidDirs and dir not in modulePaths
     dir = dirname(dir)
 
   try
