@@ -19,6 +19,7 @@ exports.config =
     libs: []
   less:
     compress: false
+** TODO Also auto-reload config from _knit file (but not targets)
 ** TODO Make coffee compiler support specifying a specific source file
 Currently, only a directory of modules can be specified, we want to be
 able to specify an individual file. This would get automatically

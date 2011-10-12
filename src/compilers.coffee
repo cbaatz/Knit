@@ -22,5 +22,6 @@ compilers =
   coffee: require('./compilers/coffee').getResources
   string: require('./compilers/string').getResources
   file: require('./compilers/file').getResources
+  jade: require('./compilers/jade').getResources
 
 module.exports = compilers
