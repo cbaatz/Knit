@@ -44,7 +44,8 @@ depends on. (Dependency does something like this).
 ** TODO Fix config parameter handling (compress doesn't work)
 Generally think through parameter handling (command line, settings,
 ENV vars, defaults).
+** TODO Default to compression when building and no compression when serving
 ** TODO Allow for variations of _knit.coffee (.knit, _knit probably)
 ** TODO Better error messages on missing _knit files
-** TODO Default to compression when building and no compression when serving
+** TODO Write documentation
 ** TODO Allow specifying non-standard handlers in config file somehow

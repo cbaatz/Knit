@@ -2,7 +2,7 @@
   if (!this.<%= @identifier %>) {
     var modules = {}, cache = {}, require = function(name, root) {
       var path = expand(root, name), indexPath = expand(path, './index'), module, fn;
-      module   = cache[path] || cache[indexPath]      
+      module   = cache[path] || cache[indexPath]
       if (module) {
         return module;
       } else if (fn = modules[path] || modules[path = indexPath]) {
@@ -48,3 +48,8 @@
 }).call(this)({
   <%- (JSON.stringify(module.id) + ": function(exports, require, module) {#{module.compile()}}" for module in @modules).join(', ') %>
 });
+<% if @?.main: %>
+require('<%- @main %>');
+<% else: %>
+// No main module to run
+<% end %>

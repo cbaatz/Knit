@@ -14,14 +14,14 @@ exports.getResources = (targetPath, root, source, config) ->
   compress = config?.coffee?.compress ? true
   libraries = config?.coffee?.libraries ? []
   dependencies = config?.coffee?.dependencies ? []
+  main = config?.coffee?.main ? false
   locals = [sourcePath]
-
   # Modules
   compiler = (messenger) ->
     dependencyModules = new Dependency(dependencies)
     localModules = new Stitch(locals)
     modules = dependencyModules.resolve().concat(localModules.resolve())
-    moduleContent = stitch(identifier: 'require', modules: modules)
+    moduleContent = stitch(identifier: 'require', modules: modules, main: main)
 
     # Library
     libraryContent = (fs.readFileSync(p.join(root, path), 'utf8') for path in libraries).join("\n")
