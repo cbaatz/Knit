@@ -22,10 +22,26 @@ exports.config =
 ** TODO Make coffee compiler support specifying a specific source file
 Currently, only a directory of modules can be specified, we want to be
 able to specify an individual file. This would get automatically
-required by the resulting JavaScript file. Also, it would allow us to
-only include those modules which it depends on (using detective).
+required by the resulting JavaScript file.
+
+This is important if we want to run some action only after the require
+function has been provided by the stitched scripts. For example:
+
+1. Load jQuery from CDN
+2. Load stiched scripts
+3. Use require inside jQuery(function () {})
+
+Would usually result in an error, because the stiched scripts have not
+had time to execute to provide 'require'. Thus, the require usage
+should be written such that it is run from the stiched scripts when
+it has provided the require function.
+
+Also, it would allow us to only include those modules which it
+depends on (using detective).
 ** TODO Make Stitch module resolve dependencies using detective
 Only include those modules that the selected main source file actually
 depends on. (Dependency does something like this).
 ** TODO Allow for variations of _knit.coffee (.knit, _knit probably)
-** TODO Allow specifying non-standard handlers in config file somehow.
+** TODO Better error messages on missing _knit files
+** TODO Default to compression when building and no compression when serving
+** TODO Allow specifying non-standard handlers in config file somehow
