@@ -1,14 +1,15 @@
 {
     "name": "knit",
     "description": "Builder and server of static resources.",
-    "version": "0.1.5",
+    "version": "0.2.0",
     "author": "Carl Baatz",
     "engine" : [ "node >=0.4.12" ],
     "main" : "./lib/knit.js",
     "bin": { "knit": "./bin/knit" },
     "dependencies" : {
 	"coffee-script": "~1.1.2",
-	"commander": "~0.2.0",
+	"eco": "1.1.0-rc-1",
+	"fast-detective": "~0.0.2",
 	"uglify-js": "~1.0.7",
 	"less": "~1.1.3",
 	"jade": "~0.16.2"

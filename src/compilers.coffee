@@ -1,29 +1,22 @@
 fs = require 'fs'
 p = require 'path'
+{loadConfig} = require './config'
 
 getResources = (target, root, source, config) ->
   root = fs.realpathSync source
-  knitPath = p.join root, "_knit"
-  # Refresh require cache (i.e. reload config)
-  delete require.cache[require.resolve knitPath]
-  knitSpec = require knitPath
-
-  configClone = {}
-  (configClone[k] = v) for k, v of config
-  (configClone[k] = v) for k, v of knitSpec.config
-
+  config = loadConfig(source, config)
   resources = {}
-  for subtarget, [source, type] of knitSpec.targets
+  for subtarget, [source, type] of config.targets
     compile = compilers[type]
-    resources[p.join target, k] = v for k, v of compile subtarget, root, source, configClone
+    resources[p.join target, k] = v for k, v of compile subtarget, root, source, config
   resources
 
 compilers =
   knit: getResources
-  less: require('./compilers/less').getResources
-  coffee: require('./compilers/coffee').getResources
-  string: require('./compilers/string').getResources
   file: require('./compilers/file').getResources
+  string: require('./compilers/string').getResources
+  less: require('./compilers/less').getResources
   jade: require('./compilers/jade').getResources
+  coffee: require('./compilers/coffee').getResources
 
 module.exports = compilers

@@ -3,13 +3,15 @@ fs = require 'fs'
 p = require 'path'
 
 exports.getResources = (targetPath, root, source, config) ->
+  config               = config?.less ? {}
+  config?.compress     ?= false
+  config?.paths        ?= []
+  config?.dependencies ?= []
+  config.paths.push(root)
   sourcePath = p.join root, source
-  compress = config?.less?.compress ? true
-  paths = config?.paths or []
-  paths.push(root)
   options =
     optimization: 1
-    paths: paths
+    paths: config.paths
     filename: sourcePath
   parser = new less.Parser options
   compile = (messenger) ->
@@ -17,7 +19,7 @@ exports.getResources = (targetPath, root, source, config) ->
       if err then return console.error err
       parser.parse data.toString(), (err, tree) =>
         if err then return console.error err
-        messenger(tree.toCSS(compress: compress))
+        messenger(tree.toCSS(compress: config.compress))
 
   result = {}
   result[targetPath] = ['text/css', compile]

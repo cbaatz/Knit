@@ -10,24 +10,25 @@ Stitch       = require './hem/stitch'
 stitch       = require '../../assets/stitch'
 
 exports.getResources = (targetPath, root, source, config) ->
+  config               = config?.coffee ? {}
+  config?.compress     ?= false
+  config?.libraries    ?= []
+  config?.dependencies ?= []
   sourcePath = p.dirname(p.join root, source)
-  compress = config?.coffee?.compress ? true
-  libraries = config?.coffee?.libraries ? []
-  dependencies = config?.coffee?.dependencies ? []
   main = p.join p.dirname(source), p.basename(source, p.extname source)
   locals = [sourcePath]
   # Modules
   compiler = (messenger) ->
-    dependencyModules = new Dependency(dependencies)
+    dependencyModules = new Dependency(config.dependencies)
     localModules = new Stitch(locals)
     modules = dependencyModules.resolve().concat(localModules.resolve())
     moduleContent = stitch(identifier: 'require', modules: modules, main: main)
 
     # Library
-    libraryContent = (fs.readFileSync(p.join(root, path), 'utf8') for path in libraries).join("\n")
+    libraryContent = (fs.readFileSync(p.join(root, path), 'utf8') for path in config.libraries).join("\n")
 
     content = [libraryContent, moduleContent].join("\n")
-    content = uglify(content) if compress
+    content = uglify(content) if config.compress
 
     messenger(content)
 
