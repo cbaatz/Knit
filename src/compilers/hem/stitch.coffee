@@ -7,14 +7,15 @@ compilers    = require('./compilers')
 class Stitch
   constructor: (@paths = []) ->
     @paths = (resolve(path) for path in @paths)
-  
+
   resolve: ->
     flatten(@walk(path) for path in @paths)
 
   # Private
 
   walk: (path, parent = path, result = []) ->
-    for child in fs.readdirSync(path)
+    # Walk over directory excluding dotfiles
+    for child in fs.readdirSync(path) when child.match(/^([^\.].*|$)/)
       child = join(path, child)
       stat  = fs.statSync(child)
       if stat.isDirectory()
@@ -28,11 +29,11 @@ class Module
   constructor: (@filename, @parent) ->
     @ext = extname(@filename).slice(1)
     @id  = modulerize(@filename.replace(@parent + '/', ''))
-    
+
   compile: ->
     compilers[@ext](@filename)
-    
+
   valid: ->
     !!compilers[@ext]
-    
+
 module.exports = Stitch
