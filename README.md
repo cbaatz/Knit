@@ -51,8 +51,8 @@ If we have an app structure
 with `.knit.coffee` containing
 
     exports.targets =
-      'app.js': ['scripts/app.coffee', 'coffee']
-      'app.css': ['styles/app.less', 'less']
+      'js/app.js': ['scripts/app.coffee', 'coffee']
+      'css/': ['./styles', 'knit']
       'favicon.ico': ['', 'string']
       'robots.txt': ['User-agent: *\nDisallow: /', 'string']
       'index.html': ['html/index.jade', 'jade']
@@ -164,28 +164,99 @@ Content can be structured into subdirectories with their own
 `.knit.coffee` files, included from the main `.knit.coffee` file using
 the special `knit` compiler. For example:
 
-TODO ...
+    myapp
+    |-- .knit.coffee
+    `-- styles
+      |-- .knit.coffee
+      `-- app.less
 
+with `myapp/.knit.coffee` containing
+
+    exports.targets =
+      'css/': ['./styles', 'knit']
+
+and `myapp/styles/.knit.coffee` containing
+
+    exports.targets =
+      'app.css': ['app.less', 'less']
+
+would produce `myapp/css/app.css` from
+
+    $ cd myapp
+    $ knit write
+
+That is, the target of the `knit` compiler specifies the parent folder
+of the targets specified in the included Knit source folders.
 
 ### `server`
 
-TODO
+Server options are set by setting properties of `exports.server` in
+the base configuration file. The following options are available:
 
-Options: root, port, host, proxyPort, proxyHost
+* `root` (`.`): Root location of content (.e.g `/static`).
+* `port` (`8081`): Knit port
+* `host` (`127.0.0.1`): Knit hostname
+* `proxyPort` (`8080`): Port of server Knit will proxy to
+* `proxyHost` (`127.0.0.1`): Hostname of server Knit will proxy to
 
 ### `writer`
 
-TODO
+Writer options are set by setting properties of `exports.writer` in
+the base configuration file. The following options are available:
 
-Options: root
+* `root` (`.`): Root location of content (.e.g `../static`).
 
 Compilers
 ---------
 
-TODO
-
 ### `coffee`
+
+The `coffee` compiler is a minimally adapted version of [Alex MacCaw's
+ Hem](https://github.com/maccman/hem), compilation implementation for
+ CoffeeScript programs. The current version of this bundles all
+ modules it finds in the source file's directory and subdirectories,
+ then requires the specified source file. That is, it is not currently
+ doing anything to calculate dependencies of local modules.
+
+* `compress` (`false`): Use [UglifyJS](https://github.com/mishoo/UglifyJS) or not.
+* `libraries` (`[]`): Include external JavaScript libraries in bundle.
+* `dependencies` (`[]`): Include Node module dependencies.
+
+The resulting file will be served as `application/javascript`.
+
 ### `file`
+
+The file compiler has no options. The source specifies the location of
+the file you want to serve, for example:
+
+    exports.targets =
+      'favicon.ico': ['../resources/app.ico', 'file']
+
+It is not currently possible to specify a particular mimetype for the
+served file.
+
 ### `string`
+
+The string compiler has no options. The source simply specifies the
+string you want to serve, for example:
+
+    exports.targets =
+      'robots.txt': ['User-agent: *\nDisallow: /', 'string']
+
+It is not currently possible to specify a particular mimetype for the
+served string.
+
 ### `less`
+
+* `compress` (`false`): Compress CSS output or not.
+* `paths` (`[]`): Less include paths.
+
+The resulting file will be served as `text/css`.
+
 ### `jade`
+* `self` (`false`): Use a `self` namespace to hold the locals.
+* `debug` (`false`): Outputs tokens and function body generated.
+* `pretty` (`false`): Pretty HTML rendering or not.
+* `locals` (`{}`): Local variables available to template.
+
+The resulting file will be served as `text/html`.
