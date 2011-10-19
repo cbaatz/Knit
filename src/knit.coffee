@@ -12,12 +12,12 @@ showUsage = () ->
   console.log ""
   console.log "Commands:"
   console.log "    serve         Serve targets as a webserver."
-  console.log "    build         Build targets to files."
+  console.log "    write         Write targets to files."
   console.log ""
   console.log "Options:"
   console.log "    --version     Show Knit version."
   console.log "    --help        Show Knit usage help (this)."
-  console.log "    --config=FILE Use Knit config file FILE."
+  console.log "    --dir=DIR     Use DIR as Knit base directory."
   console.log ""
   console.log "    Other options are arbitrary and available to config files to use as they see fit."
   console.log "    --flag        Sets option named 'flag' to true."
@@ -36,7 +36,7 @@ action = undefined
 if positionals.length > 1
   errors.push("Too many commands (#{ positionals }); only one allowed.")
 action = positionals[0] if positionals.length == 1
-if action? and action not in ['serve', 'build']
+if action? and action not in ['serve', 'write']
   errors.push("#{ action } is not a valid command. See --help for details.")
 if params?.help # Help takes precedence
   action = 'help'
@@ -64,11 +64,11 @@ else
       console.log "Loading config from #{ dir }"
       config = loadConfig(dir)
       server.serve config.server, loadResources
-    when 'build'
-      builder = require './builder'
+    when 'write'
+      writer = require './writer'
       console.log "Loading config from #{ dir }..."
       config = loadConfig(dir)
-      builder.build config.builder, loadResources
+      writer.write config.writer, loadResources
     else
       previewer = require './previewer'
       console.log "No command given, showing preview. Use --help to see available commands.\n"

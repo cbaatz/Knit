@@ -36,7 +36,7 @@ exports.config =
     libs: []
   less:
     compress: false
-** TODO Rename builder to writer
+** TODO Fix base dir lookup when using --dir
 ** TODO Catch compile errors so restart isn't required
 ** TODO Allow custom mime types (for string/file in particular)
 ** TODO Make Stitch module resolve dependencies using detective
