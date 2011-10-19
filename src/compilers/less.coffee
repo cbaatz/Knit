@@ -6,7 +6,6 @@ exports.getResources = (targetPath, root, source, config) ->
   config               = config?.less ? {}
   config?.compress     ?= false
   config?.paths        ?= []
-  config?.dependencies ?= []
   config.paths.push(root)
   sourcePath = p.join root, source
   options =
