@@ -1,18 +1,5 @@
 * Knit
-** Targets help
-Targets are specified in a _knit.coffee file as:
-
-exports.targets =
-  'result.js': ['./index', 'coffee']
-  'app.css': ['./mystyles.less', 'less']
-  'more/': ['./other', 'knit']
-  'robots.txt': ['Disallow: *', 'string']
-  'favicon.ico': ['./resources/favicon.ico', 'file']
-
-In the above the more/ folder would need to have a _knit.coffee file
-in it.
-
-*** Coffee compilation
+** Coffee compilation
 'coffee' sources specify the main module to require on (after)
 loading. Note however, that currently all modules found in the folder
 are compiled even if they are not dependencies of the main module.
@@ -28,14 +15,6 @@ Would usually result in an error, because the stiched scripts have not
 had time to execute to provide 'require'. Thus, the require usage
 should be written such that it is run from the stiched scripts when
 it has provided the require function.
-** Config help
-Config is specified in a _knit.coffee file as:
-
-exports.config =
-  coffee:
-    libs: []
-  less:
-    compress: false
 ** TODO Fix base dir lookup when using --dir
 ** TODO Catch compile errors so restart isn't required
 ** TODO Allow custom mime types (for string/file in particular)
