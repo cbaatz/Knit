@@ -154,7 +154,7 @@ defaults).
 
 It is worth repeating that you make up your own command line options
 and use them however you see fit in your config files. Only `--help`,
-`--version`, `--action`, and `--config=FILE` are reserved for use by
+`--version`, `--action`, and `--dir=DIR` are reserved for use by
 Knit. `--action` is reserved because `knit.action` is set to `serve`
 or `write` depending on the action specified.
 
