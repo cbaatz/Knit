@@ -54,8 +54,9 @@ else
   global.knit.action ?= action # Action available to config files
 
   dir = path.resolve(params?.dir or '.') # Knit base dir
+  dir = fs.realpathSync dir
   # Load resources (target and compile function pairs) from base dir
-  loadResources = () -> compilers.knit '/', dir, dir, {}
+  loadResources = () -> compilers.knit '/', '/', dir, {}
   switch action
     when 'version' then console.log "#{ VERSION }"
     when 'help' then showUsage()

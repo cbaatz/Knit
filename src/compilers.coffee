@@ -3,8 +3,8 @@ p = require 'path'
 {loadConfig} = require './config'
 
 getResources = (target, root, source, config) ->
-  root = fs.realpathSync source
-  config = loadConfig(source, config)
+  root = fs.realpathSync p.join(root, source)
+  config = loadConfig root, config
   resources = {}
   for subtarget, [source, type] of config.targets
     compile = compilers[type]
