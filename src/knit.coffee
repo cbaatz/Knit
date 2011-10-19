@@ -5,7 +5,7 @@ compilers    = require './compilers'
 cli          = require './cli'
 {loadConfig} = require './config'
 
-VERSION = '0.2.0'
+VERSION = '0.2.1'
 
 showUsage = () ->
   console.log "Usage: #{ path.basename program } [options] COMMAND"
