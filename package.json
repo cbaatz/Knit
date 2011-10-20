@@ -1,8 +1,13 @@
 {
     "name": "knit",
-    "description": "Server and writer of static content.",
+    "description": "Server and writer of compiled static content.",
     "version": "0.2.1",
     "author": "Carl Baatz",
+    "licenses":
+    [{
+	 "type": "MIT",
+	 "url": "https://github.com/cbaatz/knit/raw/master/LICENSE"
+     }],
     "engine" : [ "node >=0.4.12" ],
     "main" : "./lib/knit.js",
     "bin": { "knit": "./bin/knit" },
