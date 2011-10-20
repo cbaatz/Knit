@@ -224,6 +224,20 @@ The `coffee` compiler is a minimally adapted version of [Alex MacCaw's
 
 The resulting file will be served as `application/javascript`.
 
+The reason we want to include the require in the bundle is that some
+actions must be run only after the require function has been provided
+by the stitched scripts. Consider the following:
+
+1. Load jQuery from CDN
+2. Load stiched scripts
+3. Use require inside jQuery(function () {}) in a HTML script tag.
+
+If the stiched scripts have not had time to execute to provide the
+`require` function by the time the document and jQuery has loaded, we
+would get an error trying to use the `require` function. By putting
+the "main" `require` (containing what would otherwise be in the script
+tag) at the end of the stiched script, we avoid this.
+
 ### `file`
 
 The file compiler has no options. The source specifies the location of

@@ -1,6 +1,6 @@
 {
     "name": "knit",
-    "description": "Server and writer of compiled static content.",
+    "description": "Server and writer of compiled web content.",
     "version": "0.2.1",
     "author": "Carl Baatz",
     "licenses":
