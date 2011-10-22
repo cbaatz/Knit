@@ -1,10 +1,10 @@
 fs = require 'fs'
 p = require 'path'
 
-exports.build = (config, loadResources) ->
+exports.write = (config, loadResources) ->
   config       ?= {}
   config?.root ?= '.'
-  console.log "Building targets to filesystem..."
+  console.log "Writing targets to filesystem..."
   for path, [mimeType, compile] of loadResources()
     do (path, compile) ->
       fullPath = p.resolve p.join(config.root, path.replace(/^\//, ''))
