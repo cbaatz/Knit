@@ -16,6 +16,7 @@ compilers =
   file: require('./compilers/file').getResources
   string: require('./compilers/string').getResources
   less: require('./compilers/less').getResources
+  html: require('./compilers/html').getResources
   jade: require('./compilers/jade').getResources
   coffee: require('./compilers/coffee').getResources
 
