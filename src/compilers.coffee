@@ -13,6 +13,7 @@ getResources = (target, root, source, config) ->
 
 compilers =
   knit: getResources
+  r: require('./compilers/r').getResources
   file: require('./compilers/file').getResources
   string: require('./compilers/string').getResources
   less: require('./compilers/less').getResources
