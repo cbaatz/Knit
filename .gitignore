@@ -1,2 +1,4 @@
 node_modules/
 myapp/
+# Ignore local notes
+knit.org
