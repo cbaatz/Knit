@@ -5,7 +5,7 @@ compilers    = require './compilers'
 cli          = require './cli'
 {loadConfig} = require './config'
 
-VERSION = '0.2.2'
+VERSION = '0.3.0-dev'
 
 showUsage = () ->
   console.log "Usage: #{ path.basename program } [options] COMMAND"
@@ -42,7 +42,6 @@ if params?.help # Help takes precedence
   action = 'help'
 if params?.version # Version takes precedence
   action = 'version'
-
 
 testRoutes =
   "/": (cb) -> cb("this is the data", "text/plain")
