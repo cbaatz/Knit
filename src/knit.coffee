@@ -43,6 +43,13 @@ if params?.help # Help takes precedence
 if params?.version # Version takes precedence
   action = 'version'
 
+
+testRoutes =
+  "/": (cb) -> cb("this is the data", "text/plain")
+  "/index.html": (cb) -> cb("this is index.html", "text/html")
+  "/somejs/something.js": (cb) -> cb("this is something.js", "application/javascript")
+  "/somejs/more/app.js": (cb) -> cb("this is more/app.js", "application/javascript")
+
 # Display errors or perform action
 if errors.length > 0
   for error in errors
@@ -62,14 +69,15 @@ else
     when 'help' then showUsage()
     when 'serve'
       server = require './server'
+      # Produce routing table or function that produces routing table
       console.log "Loading config from #{ dir }"
       config = loadConfig(dir)
-      server.serve config.server, loadResources
+      server.serve config.server, testRoutes
     when 'write'
       writer = require './writer'
       console.log "Loading config from #{ dir }..."
       config = loadConfig(dir)
-      writer.write config.writer, loadResources
+      writer.write config.writer, testRoutes
     else
       previewer = require './previewer'
       console.log "No command given, showing preview. Use --help to see available commands.\n"
