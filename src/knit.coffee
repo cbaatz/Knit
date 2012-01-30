@@ -4,6 +4,7 @@ fs           = require 'fs'
 compilers    = require './compilers'
 cli          = require './cli'
 {loadConfig} = require './config'
+routes       = require './routes'
 
 VERSION = '0.3.0-dev'
 
@@ -43,12 +44,6 @@ if params?.help # Help takes precedence
 if params?.version # Version takes precedence
   action = 'version'
 
-testRoutes =
-  "/": (cb) -> cb("this is the data", "text/plain")
-  "/index.html": (cb) -> cb("this is index.html", "text/html")
-  "/somejs/something.js": (cb) -> cb("this is something.js", "application/javascript")
-  "/somejs/more/app.js": (cb) -> cb("this is more/app.js", "application/javascript")
-
 # Display errors or perform action
 if errors.length > 0
   for error in errors
@@ -63,6 +58,17 @@ else
   dir = fs.realpathSync dir
   # Load resources (target and compile function pairs) from base dir
   loadResources = () -> compilers.knit '/', '/', dir, {}
+
+  # TODO: load routes from config
+  testRoutes =
+    "/": (cb) -> cb("this is the data", "text/plain")
+    "/index.html": (cb) -> cb("this is index.html", "text/html")
+    "/somejs/something.js": (cb) -> cb("this is something.js", "application/javascript")
+    "/somejs/more/app.js": (cb) -> cb("this is more/app.js", "application/javascript")
+
+  console.log "Flattening routes..."
+  flatRoutes = routes.flatten testRoutes
+
   switch action
     when 'version' then console.log "#{ VERSION }"
     when 'help' then showUsage()
@@ -71,12 +77,12 @@ else
       # Produce routing table or function that produces routing table
       console.log "Loading config from #{ dir }"
       config = loadConfig(dir)
-      server.serve config.server, testRoutes
+      server.serve config.server, flatRoutes
     when 'write'
       writer = require './writer'
       console.log "Loading config from #{ dir }..."
       config = loadConfig(dir)
-      writer.write config.writer, testRoutes
+      writer.write config.writer, flatRoutes
     else
       previewer = require './previewer'
       console.log "No command given, showing preview. Use --help to see available commands.\n"
