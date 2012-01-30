@@ -5,7 +5,7 @@ cli           = require './cli'
 configuration = require './configuration'
 routes        = require './routes'
 
-VERSION = '0.3.0-dev'
+VERSION = '0.3.0'
 
 showUsage = () ->
   console.log "Usage: #{ path.basename program } [options] COMMAND"
