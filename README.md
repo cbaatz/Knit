@@ -24,7 +24,8 @@ with `knit.coffee` containing
       '/': (put) -> put('This is the data', 'text/plain')
       '/favicon.ico': (put) -> put('This is the data', 'image/vnd.microsoft.icon')
       'robots.txt': (put) -> put('User-agent: *\nDisallow: /', 'text/plain')
-
+      '/static/': {'hello.js': (put) ->
+                     put('alert("Hello!");','application/javascript')}
 then
 
     $ cd myapp
@@ -43,10 +44,13 @@ current directory (which of course is configurable):
     myapp
     |-- knit.coffee
     |-- favicon.ico
-    `-- robots.txt
+    |-- robots.txt
+    `-- static/hello.js
 
 The `knit.coffee` file is a normal CoffeeScript file that exports a
-'routes' object associating resource paths with a handler function:
+'routes' object associating resource paths with a handler
+function. The route specification can be nested as seen above. The
+handler function should be of the following form:
 
     handler (callback) {
         // Generate resource data and mimetype
