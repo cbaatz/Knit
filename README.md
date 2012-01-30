@@ -31,7 +31,7 @@ then
     $ knit serve
 
 will serve this on `http://localhost:8081/`, proxying everything but
-the specified resources `http://localhost:8080/`.
+the specified resources to `http://localhost:8080/`.
 
 We can also write the resources to files (for deployment for example):
 
@@ -45,9 +45,8 @@ current directory (which of course is configurable):
     |-- favicon.ico
     `-- robots.txt
 
-The `knit.coffee` (or `.knit.coffee`) file is a normal JavaScript or
-CoffeeScript file that exports a 'routes' object associating resource
-paths with a handler function:
+The `knit.coffee` file is a normal CoffeeScript file that exports a
+'routes' object associating resource paths with a handler function:
 
     handler (callback) {
         // Generate resource data and mimetype
@@ -185,7 +184,7 @@ your config file. Only `--help`, `--version`, `--action`, and
 `--dir=DIR` is reserved for specifying the directory Knit should use
 as its base directory (the directory with your config file).
 
-### `server`
+### Options for `server`
 
 Server options are set by setting properties of `exports.server` in
 the config file. The following options are available:
@@ -195,7 +194,7 @@ the config file. The following options are available:
 * `proxyPort` (`8080`): Port of server Knit will proxy to
 * `proxyHost` (`127.0.0.1`): Hostname of server Knit will proxy to
 
-### `writer`
+### Options for `writer`
 
 Writer options are set by setting properties of `exports.writer` in
 the base configuration file. The following options are available:
