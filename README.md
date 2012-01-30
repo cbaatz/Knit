@@ -6,9 +6,9 @@ static resources. The server proxies requests not matching static
 resources to some other backend server. Knit is highly configurable
 using plain JavaScript or CoffeeScript.
 
-*Please note that Knit does not yet come with any interesting
- handlers. Though these are easy to write, you will have to write them
- yourself for now.*
+[`knit-common`](https://github.com/cbaatz/knit-common) provides a few
+basic handlers so far, but many useful handlers are still lacking so
+you'll need to write these yourself for now.
 
 Example usage
 -------------
