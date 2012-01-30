@@ -16,11 +16,10 @@ exports.serve = (config, routes) ->
   cleanRoutes[p.resolve '/', path] = handler for path, handler of routes
   routes = cleanRoutes
 
+  # TODO: Reuse previewer
+  # TODO: Display mime-type and other meta info?
   console.log "Serving at #{ config.host }:#{ config.port }:"
-  for path, handler of routes
-    do (path, handler) ->
-      # TODO: Display mime-type and other meta info?
-      console.log "    #{ path }"
+  console.log "    #{ path }" for path, handler of routes
   console.log "All other requests are proxied to #{ config.proxyHost }:#{ config.proxyPort }."
 
   http.createServer((req, res) ->

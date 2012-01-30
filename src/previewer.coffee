@@ -1,13 +1,12 @@
-exports.preview = (config, loadResources) ->
-  resources = loadResources()
+exports.preview = (config, routes) ->
   strings = []
-  for target, [mime, _] of resources
-    strings.push("    #{ target } (mimetype #{ mime })")
+  for path, handler of routes
+    # TODO: Display mime-type and other meta info?
+    strings.push "    #{ path }"
+
   if strings.length > 0
     console.log "Knit found the following targets:"
-    for string in strings
-      do (string) ->
-        console.log string
+    console.log string for string in strings
   else
     console.log "Knit found NO targets."
   console.log "THIS WAS A PREVIEW; NOTHING WAS DONE."

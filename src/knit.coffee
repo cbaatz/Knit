@@ -54,10 +54,14 @@ else
   global.knit = params
   global.knit.action ?= action # Action available to config files
 
+  # TODO: Require config (i.e. load routes). Possibly a function to do
+  # this so the server re-reads config on each request. Or just let
+  # config wrap in anonymous function to get that behaviour?
+
   dir = path.resolve(params?.dir or '.') # Knit base dir
   dir = fs.realpathSync dir
   # Load resources (target and compile function pairs) from base dir
-  loadResources = () -> compilers.knit '/', '/', dir, {}
+  #loadResources = () -> compilers.knit '/', '/', dir, {}
 
   # TODO: load routes from config
   testRoutes =
@@ -88,4 +92,4 @@ else
       console.log "No command given, showing preview. Use --help to see available commands.\n"
       console.log "Loading config from #{ dir }..."
       config = loadConfig(dir)
-      previewer.preview config, loadResources
+      previewer.preview config, flatRoutes
