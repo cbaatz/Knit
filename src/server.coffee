@@ -1,6 +1,12 @@
 http = require 'http'
 p = require 'path'
 
+cleanRoutes = (routes) ->
+  # Ensure paths start with '/'
+  rs = {}
+  rs[p.resolve '/', path] = handler for path, handler of routes
+  rs
+
 exports.serve = (config, routes) ->
   config            ?= {}
   config?.port      ?= 8081
@@ -8,25 +14,26 @@ exports.serve = (config, routes) ->
   config?.host      ?= '127.0.0.1'
   config?.proxyHost ?= '127.0.0.1'
 
-  # TODO: Possible to reload routes. Create a function of the below
-  # that reloads routes if 'routes' variable is a function.
-
-  # Ensure paths start with '/'
-  cleanRoutes = {}
-  cleanRoutes[p.resolve '/', path] = handler for path, handler of routes
-  routes = cleanRoutes
+  if typeof(routes) == 'function'
+    loadRoutes = -> cleanRoutes routes()
+  else
+    cleaned = cleanRoutes routes
+    loadRoutes = -> cleaned
 
   # TODO: Reuse previewer
   # TODO: Display mime-type and other meta info?
   console.log "Serving at #{ config.host }:#{ config.port }:"
-  console.log "    #{ path }" for path, handler of routes
+  console.log "    #{ path }" for path, handler of loadRoutes()
   console.log "All other requests are proxied to #{ config.proxyHost }:#{ config.proxyPort }."
 
+  startServer config, loadRoutes
+
+startServer = (config, loadRoutes) ->
   http.createServer((req, res) ->
+    routes = loadRoutes()
     url = req.url
     if req.url of routes
       # Serve resources specified in routes
-      # [mimeType, compile] = r[url]
       handler = routes[url]
       handler (data, mimeType) ->
         res.setHeader('Content-Type', mimeType)

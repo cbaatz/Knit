@@ -1,10 +1,9 @@
 require 'coffee-script' # For resolving uncompiled CoffeeScript requires
-path         = require 'path'
-fs           = require 'fs'
-compilers    = require './compilers'
-cli          = require './cli'
-{loadConfig} = require './config'
-routes       = require './routes'
+path          = require 'path'
+fs            = require 'fs'
+cli           = require './cli'
+configuration = require './configuration'
+routes        = require './routes'
 
 VERSION = '0.3.0-dev'
 
@@ -54,42 +53,22 @@ else
   global.knit = params
   global.knit.action ?= action # Action available to config files
 
-  # TODO: Require config (i.e. load routes). Possibly a function to do
-  # this so the server re-reads config on each request. Or just let
-  # config wrap in anonymous function to get that behaviour?
-
-  dir = path.resolve(params?.dir or '.') # Knit base dir
-  dir = fs.realpathSync dir
-  # Load resources (target and compile function pairs) from base dir
-  #loadResources = () -> compilers.knit '/', '/', dir, {}
-
-  # TODO: load routes from config
-  testRoutes =
-    "/": (cb) -> cb("this is the data", "text/plain")
-    "/index.html": (cb) -> cb("this is index.html", "text/html")
-    "/somejs/something.js": (cb) -> cb("this is something.js", "application/javascript")
-    "/somejs/more/app.js": (cb) -> cb("this is more/app.js", "application/javascript")
-
-  console.log "Flattening routes..."
-  flatRoutes = routes.flatten testRoutes
+  dir = fs.realpathSync path.resolve(params?.dir or '.') # Knit base dir
+  console.log "Base dir: #{ dir }"
 
   switch action
     when 'version' then console.log "#{ VERSION }"
     when 'help' then showUsage()
     when 'serve'
       server = require './server'
-      # Produce routing table or function that produces routing table
-      console.log "Loading config from #{ dir }"
-      config = loadConfig(dir)
-      server.serve config.server, flatRoutes
+      config = -> configuration.load dir # Reload each each request
+      server.serve(config().server, -> routes.flatten config().routes)
     when 'write'
       writer = require './writer'
-      console.log "Loading config from #{ dir }..."
-      config = loadConfig(dir)
-      writer.write config.writer, flatRoutes
+      config = configuration.load dir # Only load once
+      writer.write(config.writer, routes.flatten config.routes)
     else
       previewer = require './previewer'
-      console.log "No command given, showing preview. Use --help to see available commands.\n"
-      console.log "Loading config from #{ dir }..."
-      config = loadConfig(dir)
-      previewer.preview config, flatRoutes
+      console.log "No command. Use --help to see available commands."
+      config = configuration.load dir
+      previewer.preview(config.previewer, routes.flatten config.routes)
