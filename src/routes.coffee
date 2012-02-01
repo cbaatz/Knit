@@ -10,6 +10,10 @@ listRoutes = (routes) ->
       if typeof(handlerOrRoutes) == 'function'
         # Route is associated with handler so not nested
         list.push [route, handlerOrRoutes]
+      else if handlerOrRoutes instanceof Array
+        for hor in handlerOrRoutes
+          do (hor) ->
+            list.push [p.join(route, r), h] for [r, h] in listRoutes hor
       else if typeof(handlerOrRoutes) == 'object'
         # Route is associated with object so assume nested.
         # Recurisvely get list of route/handler pairs and join paths
