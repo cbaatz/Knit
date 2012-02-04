@@ -42,6 +42,9 @@ if params?.help # Help takes precedence
   action = 'help'
 if params?.version # Version takes precedence
   action = 'version'
+if params?.action # Action parameter not allowed
+  console.log "ERROR: --action is a reserved parameter. Please use an alternative."
+  process.exit 0
 
 # Display errors or perform action
 if errors.length > 0
