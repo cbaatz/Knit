@@ -22,6 +22,9 @@ exports.load = (name) ->
     knitPaths = process.env.KNIT_PATH?.split(':') or []
     # Current directory
     candidates.push (path.resolve "./#{ name }")
+    # ~/.knit/ if we have a HOME environment variable
+    if process.env.HOME
+      candidates.push (path.resolve "#{ process.env.HOME }/#{ name }")
     # Knit paths
     candidates.push(path.resolve(path.join(p, name))) for p in knitPaths
     # Standard Knit configs to make it easy to bundle useful config
