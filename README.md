@@ -201,8 +201,9 @@ Knit will look for a module with that name in the following locations
 (in order):
 
 1. The current directory (`.`)
-2. The paths specified in the environment variable `KNIT_PATHS`
-3. The `configs` folder of the Knit distribution (allowing Knit to
+2. `$HOME/.knit/` if the `HOME` environment variable is defined
+3. The paths specified in the environment variable `KNIT_PATHS`
+4. The `configs` folder of the Knit distribution (allowing Knit to
    ship useful config files by default).
 
 ### Options for `server`
