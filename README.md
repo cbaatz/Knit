@@ -112,13 +112,21 @@ JavaScript or CoffeeScript that get access to a global `knit` object
 containing the parameter values. Thus, you have incredible flexibility
 for how to construct the `routes` object that defines your resources.
 
-Knit looks for a JavaScript or CoffeeScript `knit` or `.knit` node.js
-module in the base directory (current by default). That is, it looks
-for one of `knit.coffee`, `knit.js`, `.knit.coffee`, or `.knit.js`. It
-is up to you whether you prefer to write the config file in JavaScript
-or CoffeeScript.
+Knit supports both JavaScript and CoffeeScript config modules. You can
+optionally specify a config module name on the command line. If no
+config name is specified (`knit write` for example), Knit defaults to
+look for a `knit` or `.knit` module in the current directory
+(only). If a config name is specified (`knit write myconfig` for
+example), Knit will look for a module with that name in the following
+locations (in order):
 
-### Example
+1. The current directory (`.`)
+2. `$HOME/.knit/` if the `HOME` environment variable is defined
+3. The paths specified in the environment variable `KNIT_PATHS`
+4. The `configs` folder of the Knit distribution (allowing Knit to
+   ship useful config files by default).
+
+### Config file example
 
 Let's look at an example to highlight some of the configuration
 features:
@@ -189,22 +197,6 @@ are reserved for use by Knit.
 config files. Note that the first positional argument after the
 command is interpreted as a config name so positional arguments only
 make sense when explicitly specifying a config module name.
-
-### Specifying config file
-
-If no config name is specified (`knit write` for example), Knit
-defaults to look for a `knit` or `.knit` module in the current
-directory (only).
-
-If a config name is specified (`knit write myconfig` for example),
-Knit will look for a module with that name in the following locations
-(in order):
-
-1. The current directory (`.`)
-2. `$HOME/.knit/` if the `HOME` environment variable is defined
-3. The paths specified in the environment variable `KNIT_PATHS`
-4. The `configs` folder of the Knit distribution (allowing Knit to
-   ship useful config files by default).
 
 ### Options for `server`
 
