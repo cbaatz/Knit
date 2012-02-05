@@ -5,25 +5,24 @@ cli           = require './cli'
 configuration = require './configuration'
 routes        = require './routes'
 
-VERSION = '0.4.1'
+VERSION = '0.5.0-dev'
 
 showUsage = () ->
-  console.log "Usage: #{ path.basename program } [options] COMMAND"
+  console.log "Usage: #{ path.basename program } COMMAND [config] [args]"
   console.log ""
   console.log "Commands:"
-  console.log "    serve         Serve targets as a webserver."
-  console.log "    write         Write targets to files."
+  console.log "    serve          Serve targets as a webserver."
+  console.log "    write          Write targets to files."
   console.log ""
   console.log "Options:"
-  console.log "    --version     Show Knit version."
-  console.log "    --help        Show Knit usage help (this)."
-  console.log "    --dir=DIR     Use DIR as Knit base directory."
+  console.log "    --version      Show Knit version."
+  console.log "    --help         Show Knit usage help (this)."
   console.log ""
   console.log "    Other options are arbitrary and available to config files to use as they see fit."
-  console.log "    --flag        Sets option named 'flag' to true."
-  console.log "    --no-flag     Sets option named 'flag' to false."
-  console.log "    --flag=val    Sets option named 'flag' to 'val'."
-  console.log "    -f            Sets option named 'f' to true."
+  console.log "    --flag         Sets option named 'flag' to true."
+  console.log "    --no-flag      Sets option named 'flag' to false."
+  console.log "    --flag=val     Sets option named 'flag' to 'val'."
+  console.log "    -f             Sets option named 'f' to true."
   console.log ""
 
 # Parse command
@@ -33,45 +32,58 @@ process.argv.shift() # Shave off coffee/node command
 # Simple command validation/selection
 errors = []
 action = undefined
-if positionals.length > 1
-  errors.push("Too many commands (#{ positionals }); only one allowed.")
-action = positionals[0] if positionals.length == 1
+configName = undefined
+
+# Get positional arguments
+if positionals.length == 0
+  errors.push("Command required but none given. See --help for details.")
+if positionals.length >= 1
+  action = positionals.shift()
+if positionals.length >= 1
+  configName = positionals.shift()
+
+# Help and version actions take precedence
+if params?.help
+  action = 'help'
+if params?.version
+  action = 'version'
+
+# Check for errors
 if action? and action not in ['serve', 'write']
   errors.push("#{ action } is not a valid command. See --help for details.")
-if params?.help # Help takes precedence
-  action = 'help'
-if params?.version # Version takes precedence
-  action = 'version'
-if params?.action # Action parameter not allowed
-  console.log "ERROR: --action is a reserved parameter. Please use an alternative."
-  process.exit 0
+if params?.action # action parameter not allowed
+  errors.push("--action is a reserved parameter. Please use an alternative.")
+if params?.args # args parameter not allowed
+  errors.push("--args is a reserved parameter. Please use an alternative.")
 
-# Display errors or perform action
 if errors.length > 0
-  for error in errors
-    console.log "ERROR: #{ error }"
+  # Display errors and exit
+  console.log "ERROR: #{ error }" for error in errors
 else
   # Config files can access command line params from the global
   # variable 'knit'. For example: compress: knit?.compress ? false
   global.knit = params
   global.knit.action ?= action # Action available to config files
-
-  dir = fs.realpathSync path.resolve(params?.dir or '.') # Knit base dir
-  console.log "Base dir: #{ dir }"
+  global.knit.args = positionals # Provide positional arguments as args
+  # NOTE: Positionals thus only make sense with an explicit config name.
 
   switch action
     when 'version' then console.log "#{ VERSION }"
     when 'help' then showUsage()
     when 'serve'
       server = require './server'
-      config = -> configuration.load dir # Reload each each request
-      server.serve(config().server, -> routes.flatten config().routes)
+      config = -> configuration.load configName # Reload each each request
+      initialConfig = config()
+      console.log "Config file: #{ initialConfig.FILENAME }"
+      server.serve(initialConfig.server, -> routes.flatten config().routes)
     when 'write'
       writer = require './writer'
-      config = configuration.load dir # Only load once
+      config = configuration.load configName # Only load once
+      console.log "Config file: #{ config.FILENAME }"
       writer.write(config.writer, routes.flatten config.routes)
     else
+      # TODO: Probably merge this with writer (giving writer a --noop option)
       previewer = require './previewer'
       console.log "No command. Use --help to see available commands."
-      config = configuration.load dir
+      config = configuration.load configName
       previewer.preview(config.previewer, routes.flatten config.routes)

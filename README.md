@@ -179,14 +179,31 @@ will set the global `knit` object to:
 
 It is worth reiterating that there is nothing special about the
 command line parameters above. You make use of them as you see fit in
-your config file. Only `--help`, `--version`, `--action`, and
-`--dir=DIR` are reserved for use by Knit.
+your config file. Only `--help`, `--version`, `--action`, and `--args`
+are reserved for use by Knit.
 
 `--action` is reserved because `knit.action` is set to `serve` or
 `write` depending on the action specified.
 
-`--dir=DIR` is reserved for specifying the directory Knit should use
-as its base directory (the directory with your config file).
+`--args` is reserved for making positional arguments available to
+config files. Note that the first positional argument after the
+command is interpreted as a config name so positional arguments only
+make sense when explicitly specifying a config module name.
+
+### Specifying config file
+
+If no config name is specified (`knit write` for example), Knit
+defaults to look for a `knit` or `.knit` module in the current
+directory (only).
+
+If a config name is specified (`knit write myconfig` for example),
+Knit will look for a module with that name in the following locations
+(in order):
+
+1. The current directory (`.`)
+2. The paths specified in the environment variable `KNIT_PATHS`
+3. The `configs` folder of the Knit distribution (allowing Knit to
+   ship useful config files by default).
 
 ### Options for `server`
 
