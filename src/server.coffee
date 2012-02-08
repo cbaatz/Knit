@@ -35,10 +35,16 @@ startServer = (config, loadRoutes) ->
     if req.url of routes
       # Serve resources specified in routes
       handler = routes[url]
-      handler (data, mimeType) ->
-        res.setHeader('Content-Type', mimeType)
-        res.setHeader('Cache-Control', 'no-cache')
-        res.writeHead 200
+      handler (data, mimeOrHeaders, status, phrase) ->
+        headers = {}
+        if (typeof mimeOrHeaders) == 'object'
+          headers[h.toLowerCase()] = v for h, v of mimeOrHeaders
+        else if (typeof mimeOrHeaders) == 'string'
+          headers['content-type'] = mimeOrHeaders
+        else
+          headers['content-type'] = 'text/plain'
+        headers['cache-control'] ?= 'no-cache'
+        res.writeHead((status or 200), (phrase or "OK"), headers)
         res.write data
         console.log "#{ req.method } #{ req.url }"
         res.end()

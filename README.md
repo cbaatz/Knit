@@ -6,9 +6,8 @@ static resources. The server proxies requests not matching static
 resources to some other backend server. Knit is highly configurable
 using plain JavaScript or CoffeeScript.
 
-[`knit-common`](https://github.com/cbaatz/knit-common) provides a few
-basic handlers so far, but many useful handlers are still lacking so
-you'll need to write these yourself for now.
+[`knit-common`](https://github.com/cbaatz/knit-common) provides
+handlers for some common use-cases.
 
 Example usage
 -------------
@@ -21,9 +20,9 @@ Simple (not particularly useful) example:
 with `knit.coffee` containing
 
     exports.routes =
-      '/': (put) -> put('This is the data', 'text/plain')
-      '/favicon.ico': (put) -> put('This is the data', 'image/vnd.microsoft.icon')
-      'robots.txt': (put) -> put('User-agent: *\nDisallow: /', 'text/plain')
+      '/': (put) -> put('This is the data', 'text/plain', 200, "OK")
+      '/favicon.ico': (put) -> put('This is the data', {'Content-Type': 'image/vnd.microsoft.icon'})
+      'robots.txt': (put) -> put('User-agent: *\nDisallow: /')
       '/static/': {'hello.js': (put) ->
                      put('alert("Hello!");','application/javascript')}
 then
@@ -54,11 +53,14 @@ handler function should be of the following form:
 
     handler (callback) {
         // Generate resource data and mimetype
-        callback(data, mimetype)
+        callback(data, [mimetypeOrHeaders], [statusCode], [reasonPhrase])
     }
 
-A companion package will be published later providing common handlers
-for Jade, Less, and serving directory trees, for example.
+The callback (`put` in the example above) takes the resource data as
+the first argument. It expects the second argument to be a mime-type
+or an object of HTTP headers. It expects the third and fourth
+arguments to be the HTTP status code and reason phrase respectively
+(rarely used).
 
 Alternative explanation
 -----------------------

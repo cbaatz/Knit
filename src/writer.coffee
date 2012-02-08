@@ -37,7 +37,7 @@ exports.write = (config, routes) ->
         if config.makeDirs
           ensureDirs (p.dirname fullFilePath)
 
-        handler (data, mimeType) ->
+        handler (data, mimeOrHeaders, status, phrase) ->
           if config.overwrite or not (p.existsSync fullFilePath)
             fs.writeFile fullFilePath, data, 'utf8', (err) ->
               if err
