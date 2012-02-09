@@ -20,8 +20,7 @@ exports.serve = (config, routes) ->
     cleaned = cleanRoutes routes
     loadRoutes = -> cleaned
 
-  # TODO: Reuse previewer
-  # TODO: Display mime-type and other meta info?
+  # TODO: Reuse previewer (which should actually read the content to a memory stream)
   console.log "Serving at #{ config.host }:#{ config.port }:"
   console.log "    #{ path }" for path, handler of loadRoutes()
   console.log "All other requests are proxied to #{ config.proxyHost }:#{ config.proxyPort }."
@@ -32,38 +31,35 @@ startServer = (config, loadRoutes) ->
   http.createServer((req, res) ->
     routes = loadRoutes()
     url = req.url
-    if req.url of routes
+    if req.url of routes # then we should handle the request
+      # Print status message for Knit request
+      req.on('end', () -> console.log "KNIT  #{ req.method } #{ req.url }")
+      # Set default headers before passing on to handler
+      res.setHeader('Cache-Control', 'no-cache')
+      res.setHeader('Content-Type', 'text/plain')
       # Serve resources specified in routes
       handler = routes[url]
-      handler (data, mimeOrHeaders, status, phrase) ->
-        headers = {}
-        if (typeof mimeOrHeaders) == 'object'
-          headers[h.toLowerCase()] = v for h, v of mimeOrHeaders
-        else if (typeof mimeOrHeaders) == 'string'
-          headers['content-type'] = mimeOrHeaders
-        else
-          headers['content-type'] = 'text/plain'
-        headers['cache-control'] ?= 'no-cache'
-        res.writeHead((status or 200), (phrase or "OK"), headers)
-        res.write data
-        console.log "#{ req.method } #{ req.url }"
-        res.end()
-    else
-      # Or pass request on to proxy
+      handler res
+    else # pass request on to proxy
+      # Print status message for Proxy request
+      req.on('end', () -> console.log "PROXY #{ req.method } #{ req.url }")
+      # Set proxy request details
       poptions =
         host: config.proxyHost
         port: config.proxyPort
         path: req.url
         method: req.method
         headers: req.headers
+      # Make proxy request
       preq = http.request poptions, (pres) ->
         res.writeHead pres.statusCode, pres.headers
-        pres.addListener 'data', (chunk) -> res.write chunk, 'binary'
-        pres.addListener 'end', () -> res.end()
+        pres.on('data', (chunk) -> res.write chunk, 'binary')
+        pres.on('end', () -> res.end())
       preq.on 'error', (e) ->
         # console.error ("IGNORING socket close: " + JSON.stringify e)
+        console.error "ERROR: #{ e.message } for #{ req.method } #{ req.url }"
         res.writeHead(500, e.code)
         res.end("Proxy connection error: #{ e }\n", "utf8")
-      req.addListener 'data', (chunk) -> preq.write chunk, 'binary'
-      req.addListener 'end', () -> preq.end()
+      req.on('data', (chunk) -> preq.write chunk, 'binary')
+      req.on('end', () -> preq.end())
   ).listen(config.port, config.host)

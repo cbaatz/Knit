@@ -9,6 +9,9 @@ using plain JavaScript or CoffeeScript.
 [`knit-common`](https://github.com/cbaatz/knit-common) provides
 handlers for some common use-cases.
 
+*NOTE: the handler function have changed API (now a
+ stream). Documentation does not yet reflect this.*
+
 Example usage
 -------------
 

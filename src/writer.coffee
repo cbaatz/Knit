@@ -37,13 +37,19 @@ exports.write = (config, routes) ->
         if config.makeDirs
           ensureDirs (p.dirname fullFilePath)
 
-        handler (data, mimeOrHeaders, status, phrase) ->
-          if config.overwrite or not (p.existsSync fullFilePath)
-            fs.writeFile fullFilePath, data, 'utf8', (err) ->
-              if err
-                console.log "ERROR: #{ err.message }"
-              else
-                size = data.length
-                console.log "WROTE #{ fullFilePath }: #{ size } bytes. DONE."
-          else
-            console.log "IGNORED #{ path }: #{ fullFilePath } exists."
+        # If we want to be able to control the file permissions, we
+        # have two options:
+
+        # 1. Wrap a buffer write stream around the fs write stream
+        # 2. Add a method to change the permissions of the fs write
+        # stream when it ends. This seems less secure.
+
+        if config.overwrite or not (p.existsSync fullFilePath)
+          res = fs.createWriteStream(fullFilePath)
+          res.on('close', () ->
+            console.log "WROTE #{ fullFilePath }: #{ res.bytesWritten } bytes. DONE.")
+          res.on('error', (err) ->
+            console.log "ERROR: #{ err.message }")
+          handler res
+        else
+          console.log "IGNORED #{ path }: #{ fullFilePath } exists."
