@@ -40,13 +40,13 @@ exports.load = (name) ->
     candidates.push (path.resolve './.knit')
 
   # Find first existing module
-  paths = (resolve name for name in candidates)
+  paths = (resolve n for n in candidates)
   paths = (p for p in paths when p?)
   resolved = paths[0]
 
   if not resolved
-    console.error "ERROR: Could not find config file. Modules tried:"
-    console.error "    #{ name }" for name in candidates
+    console.error "ERROR: Could not find config file '#{ name }'. Modules tried:"
+    console.error "    #{ n }" for n in candidates
     process.exit(1)
   else
     try

@@ -39,8 +39,6 @@ if positionals.length == 0
   errors.push("Command required but none given. See --help for details.")
 if positionals.length >= 1
   action = positionals.shift()
-if positionals.length >= 1
-  configName = positionals.shift()
 
 # Help and version actions take precedence
 if params?.help
@@ -49,8 +47,6 @@ if params?.version
   action = 'version'
 
 # Check for errors
-if action? and action not in ['serve', 'write']
-  errors.push("#{ action } is not a valid command. See --help for details.")
 if params?.action # action parameter not allowed
   errors.push("--action is a reserved parameter. Please use an alternative.")
 if params?.args # args parameter not allowed
@@ -71,19 +67,25 @@ else
     when 'version' then console.log "#{ VERSION }"
     when 'help' then showUsage()
     when 'serve'
+      if positionals.length >= 1
+        configName = positionals.shift()
       server = require './server'
       config = -> configuration.load configName # Reload each each request
       initialConfig = config()
       console.log "Config file: #{ initialConfig.FILENAME }"
       server.serve(initialConfig.server, -> routes.flatten config().routes)
     when 'write'
+      if positionals.length >= 1
+        configName = positionals.shift()
       writer = require './writer'
       config = configuration.load configName # Only load once
       console.log "Config file: #{ config.FILENAME }"
       writer.write(config.writer, routes.flatten config.routes)
     else
-      # TODO: Probably merge this with writer (giving writer a --noop option)
-      previewer = require './previewer'
-      console.log "No command. Use --help to see available commands."
-      config = configuration.load configName
-      previewer.preview(config.previewer, routes.flatten config.routes)
+      # If action is none of the above, assume 'write' action with
+      # resource file of the 'action' name.
+      configName = action
+      writer = require './writer'
+      config = configuration.load configName # Only load once
+      console.log "Config file: #{ config.FILENAME }"
+      writer.write(config.writer, routes.flatten config.routes)
