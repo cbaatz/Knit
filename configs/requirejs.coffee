@@ -12,7 +12,7 @@ plugins =
   'i18n':     ['jrburke', 'requirejs', ref, 'i18n.js']
   'cs':       ['jrburke', 'require-cs', 'master', 'cs.js']
 
-if arg == 'help' or arg == 'h'
+if arg == 'help' or knit.help or knit.h
   console.log "Knit resource file for RequireJS retrieval"
   console.log "Usage:   knit requirejs REF [PLUGINS]"
   console.log "Example: knit requirejs 1.0.4 text domReady"
