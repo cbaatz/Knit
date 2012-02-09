@@ -39,6 +39,11 @@ startServer = (config, loadRoutes) ->
       res.setHeader('Content-Type', 'text/plain')
       # Serve resources specified in routes
       handler = routes[url]
+      # Add convenience method to set mime-type
+      res.setMime = (mime) -> this.setHeader('Content-Type', mime)
+      res.endWithMime = (data, mime) ->
+        this.setHeader('Content-Type', mime)
+        this.end(data)
       handler res
     else # pass request on to proxy
       # Print status message for Proxy request

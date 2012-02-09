@@ -13,6 +13,18 @@ ensureDirs = (path) ->
         console.log "CREATED #{ dir } directory in #{ previous }"
       previous = current
 
+masqueradeAsHttpResponse = (stream) ->
+  stream.writeContinue = ->
+  stream.writeHead = ->
+  stream.statusCode = 0
+  stream.setHeader = ->
+  stream.getHeader = ->
+  stream.removeHeader = ->
+  stream.addTrailers = ->
+  stream.setMime = ->
+  stream.endWithMime = (d, m) -> this.end(d)
+  stream
+
 exports.write = (config, routes) ->
 
   config ?= {}
@@ -45,7 +57,7 @@ exports.write = (config, routes) ->
         # stream when it ends. This seems less secure.
 
         if config.overwrite or not (p.existsSync fullFilePath)
-          res = fs.createWriteStream(fullFilePath)
+          res = masqueradeAsHttpResponse fs.createWriteStream(fullFilePath)
           res.on('close', () ->
             console.log "WROTE #{ fullFilePath }: #{ res.bytesWritten } bytes. DONE.")
           res.on('error', (err) ->
