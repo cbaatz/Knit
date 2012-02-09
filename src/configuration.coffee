@@ -20,8 +20,12 @@ exports.load = (name) ->
 
   if name?
     knitPaths = process.env.KNIT_PATH?.split(':') or []
-    # Current directory
-    candidates.push (path.resolve "./#{ name }")
+
+    # Do not include current directory since this would pick up any
+    # .js/.coffee file by the given name and that's not what we want
+    # when we have library getters named things like 'jquery'.
+    # candidates.push (path.resolve "./#{ name }")
+
     # ~/.knit/ if we have a HOME environment variable
     if process.env.HOME
       candidates.push (path.resolve "#{ process.env.HOME }/.knit/#{ name }")
