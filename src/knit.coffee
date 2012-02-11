@@ -52,6 +52,8 @@ if params?.action # action parameter not allowed
   errors.push("--action is a reserved parameter. Please use an alternative.")
 if params?.args # args parameter not allowed
   errors.push("--args is a reserved parameter. Please use an alternative.")
+if params?.log # log parameter not allowed
+  errors.push("--log is a reserved parameter. Please use an alternative.")
 
 if errors.length > 0
   # Display errors and exit
