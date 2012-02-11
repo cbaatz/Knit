@@ -7,7 +7,7 @@ resources     = require './resources'
 routes        = require './routes'
 log           = require './log'
 
-VERSION = '0.5.0-dev'
+VERSION = '0.5.0'
 
 showUsage = () ->
   # Help should probably not be logged to logger, just print to console
