@@ -128,7 +128,7 @@ locations (in order):
 1. The current directory (`.`)
 2. `$HOME/.knit/` if the `HOME` environment variable is defined
 3. The paths specified in the environment variable `KNIT_PATHS`
-4. The `configs` folder of the Knit distribution (allowing Knit to
+4. The `contrib` folder of the Knit distribution (allowing Knit to
    ship useful config files by default).
 
 ### Config file example

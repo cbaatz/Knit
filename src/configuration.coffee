@@ -32,12 +32,11 @@ exports.load = (name) ->
       candidates.push (path.resolve "#{ process.env.HOME }/.knit/#{ name }")
     # Knit paths
     candidates.push(path.resolve(path.join(p, name))) for p in knitPaths
-    # Standard Knit configs to make it easy to bundle useful config
-    # files in the main Knit distribution. These might import modules
-    # that are not guaranteed to be installed (so would exit with an
-    # error, which is fine).
+    # Make it easy to bundle standard resource files with the main
+    # Knit distribution. These might try to import modules that are
+    # not installed (so would exit with an error, which is fine).
     knitDir = path.dirname process.mainModule.filename
-    candidates.push (path.join knitDir, "../configs/#{ name }")
+    candidates.push (path.join knitDir, "../contrib/#{ name }")
   else
     # Look for default knit resource file and use that as working dir
     next = path.resolve '.'
