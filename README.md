@@ -1,16 +1,20 @@
 Knit
 ====
 
-Knit helps you serve and build static resoruces. You define the
-resources in a file that associates resource names with handlers
-that produces the content. A handler is a function that gets a
-[Writable
+Knit helps you serve static resources during development and build
+them for deployment. It can also help you download third-party
+libraries and initialise projects.
+
+You define the resources in a file that associates resource names with
+handlers that produces the content. A handler is a function that gets
+a [Writable
 Stream](http://nodejs.org/docs/latest/api/streams.html#writable_Stream)
 to write its content to.
 
-Put differently, Knit overlays your normal development webserver,
-capturing requests for static content, recompiling it, serving it, and
-then proxies other requests.
+Put differently, Knit can overlay your normal development webserver,
+capture requests for static content, recompile it, and serve it. If
+the request is for another resource, Knit will proxy to your dynamic
+server.
 
 Knit provides an HTTP server that serves the defined resources and
 otherwise acts as a proxy for another server (e.g. local development
