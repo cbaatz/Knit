@@ -192,8 +192,8 @@ will set the global `knit` object to:
 
 It is worth reiterating that there is nothing special about the
 command line parameters above. You make use of them as you see fit in
-your config file. Only `--help`, `--version`, `--action`, and `--args`
-are reserved for use by Knit.
+your config file. Only `--help`, `--version`, `--action`, `--args`,
+and `--log` are reserved for use by Knit.
 
 `--action` is reserved because `knit.action` is set to `serve` or
 `write` depending on the action specified.
@@ -202,6 +202,9 @@ are reserved for use by Knit.
 config files. Note that the first positional argument after the
 command is interpreted as a config name so positional arguments only
 make sense when explicitly specifying a config module name.
+
+`--log` is reserved for making the Winston logger available to
+resource files.
 
 ### Options for `server`
 
