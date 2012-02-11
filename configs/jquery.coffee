@@ -3,7 +3,7 @@ handle = require 'knit-common'
 arg = knit.args.shift() or 'help'
 
 if arg == 'help' or knit.help or knit.h
-  console.log "Knit resource file for jQuery retrieval"
+  console.log "Knit resource file for downloading jQuery"
   console.log "Usage:   knit jquery VERSION"
   console.log "Example: knit jquery 1.7.1"
 else

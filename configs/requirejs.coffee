@@ -13,7 +13,7 @@ plugins =
   'cs':       ['jrburke', 'require-cs', 'master', 'cs.js']
 
 if arg == 'help' or knit.help or knit.h
-  console.log "Knit resource file for RequireJS retrieval"
+  console.log "Knit resource file for downloading RequireJS"
   console.log "Usage:   knit requirejs REF [PLUGINS]"
   console.log "Example: knit requirejs 1.0.4 text domReady"
   console.log "         knit requirejs master"
@@ -28,6 +28,6 @@ else
         [user, repo, ref, file] = plugins[arg]
         exports.routes[file] = handle.github(user, repo, ref, file)
         if arg == 'cs'
-          console.log "WARNING: CoffeScript plugin hardcoded to master version."
+          knit.log.warn "CoffeScript plugin hardcoded to 'master' version."
       else
-        console.log "ERROR: '#{ arg }' plugin not known."
+        knit.log.error "'#{ arg }' plugin not known."
