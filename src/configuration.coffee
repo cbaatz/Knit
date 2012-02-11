@@ -38,15 +38,21 @@ exports.load = (name) ->
     knitDir = path.dirname process.mainModule.filename
     candidates.push (path.join knitDir, "../configs/#{ name }")
   else
-    # TODO: Recursively look for knit files in parent directories to
-    # make it easy to run 'knit serve' from project subdirs.
-    candidates.push (path.resolve './knit')
-    candidates.push (path.resolve './.knit')
+    # Look for default knit resource file.
+    next = path.resolve '.'
+    while dir != next
+      dir = next
+      next = path.resolve (path.join dir, '..')
+      candidates.push(path.resolve (path.join dir, 'knit'))
+      candidates.push(path.resolve (path.join dir, '.knit'))
 
   # Find first existing module
   paths = (resolve n for n in candidates)
   paths = (p for p in paths when p?)
   resolved = paths[0]
+
+  # Set working directory to that of the resource file
+  process.chdir(path.dirname resolved)
 
   if not resolved
     console.error "ERROR: Could not find config file '#{ name }'. Modules tried:"
@@ -60,5 +66,4 @@ exports.load = (name) ->
       config
     catch err
       console.error "ERROR: Config file threw error while loading:"
-      console.error "    ", err.message
-      process.exit(1)
+      console.error "    ",
