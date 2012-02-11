@@ -1,5 +1,6 @@
 fs = require 'fs'
 p = require 'path'
+log = require './log'
 
 ensureDirs = (path) ->
   # Ensure path exists; that is, create dirs that don't exists.
@@ -10,7 +11,7 @@ ensureDirs = (path) ->
       current = p.join previous, dir
       if not p.existsSync(current)
         fs.mkdirSync(current)
-        console.log "CREATED #{ dir } directory in #{ previous }"
+        log.info "Created directory '#{ dir }' in #{ previous }"
       previous = current
 
 masqueradeAsHttpResponse = (stream) ->
@@ -35,7 +36,8 @@ exports.write = (config, routes) ->
 
   buildDir = p.join (p.resolve config.root), '/'
 
-  console.log "Writing resources to #{ config.root } (#{ buildDir })..."
+  log.debug "Writer output directory (relative): #{ config.root }"
+  log.debug "Writer output directory (absolute): #{ buildDir }"
 
   for path, handler of routes
     do (path, handler) ->
@@ -44,7 +46,7 @@ exports.write = (config, routes) ->
       basename = p.basename path
       if (basename == '') or /\/$/.test(basename)
         # Path points to a directory
-        console.log "IGNORED #{ path }: Can't write to a directory."
+        log.warn "IGNORED #{ path }: can't write to a directory."
       else
         if config.makeDirs
           ensureDirs (p.dirname fullFilePath)
@@ -59,9 +61,9 @@ exports.write = (config, routes) ->
         if config.overwrite or not (p.existsSync fullFilePath)
           res = masqueradeAsHttpResponse fs.createWriteStream(fullFilePath)
           res.on('close', () ->
-            console.log "WROTE #{ fullFilePath }: #{ res.bytesWritten } bytes. DONE.")
+            log.info "WROTE #{ fullFilePath }: #{ res.bytesWritten } bytes.")
           res.on('error', (err) ->
-            console.log "ERROR: #{ err.message }")
+            log.error "#{ err.message }")
           handler res
         else
-          console.log "IGNORED #{ path }: #{ fullFilePath } exists."
+          log.warn "IGNORED #{ path }: #{ fullFilePath } exists."

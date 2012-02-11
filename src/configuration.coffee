@@ -1,5 +1,6 @@
 path = require 'path'
 fs   = require 'fs'
+log = require './log'
 
 resolve = (fullModuleName) ->
   try
@@ -38,25 +39,28 @@ exports.load = (name) ->
     knitDir = path.dirname process.mainModule.filename
     candidates.push (path.join knitDir, "../configs/#{ name }")
   else
-    # Look for default knit resource file.
+    # Look for default knit resource file and use that as working dir
     next = path.resolve '.'
     while dir != next
       dir = next
       next = path.resolve (path.join dir, '..')
       candidates.push(path.resolve (path.join dir, 'knit'))
       candidates.push(path.resolve (path.join dir, '.knit'))
+      # Set working directory to that of the resource file
+      process.chdir(path.dirname resolved)
 
   # Find first existing module
   paths = (resolve n for n in candidates)
   paths = (p for p in paths when p?)
   resolved = paths[0]
 
-  # Set working directory to that of the resource file
-  process.chdir(path.dirname resolved)
-
   if not resolved
-    console.error "ERROR: Could not find config file '#{ name }'. Modules tried:"
-    console.error "    #{ n }" for n in candidates
+    if name
+      log.error "No resource module '#{ name }' found at:"
+      log.error "#{ file }" for file in candidates
+    else
+      log.error "No resource module found at any of the default locations:"
+      log.error "#{ file }" for file in candidates
     process.exit(1)
   else
     try
@@ -65,5 +69,6 @@ exports.load = (name) ->
       config.FILENAME = resolved
       config
     catch err
-      console.error "ERROR: Config file threw error while loading:"
-      console.error "    ",
+      log.error "Could not load resource file '#{ resolved }':"
+      log.error "#{ err }"
+      process.exit(1)

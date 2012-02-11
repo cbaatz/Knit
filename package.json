@@ -12,6 +12,7 @@
     "main" : "./lib/knit.js",
     "bin": { "knit": "./bin/knit" },
     "dependencies" : {
-	"coffee-script": "1.2.0"
+	"coffee-script": "1.2.0",
+	"winston": "0.5.9"
     }
 }
