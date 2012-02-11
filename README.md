@@ -88,6 +88,35 @@ Installation requires
     cd knit
     npm install -g
 
+Knit as a library downloader or template writer
+-----------------------------------------------
+
+If you tell Knit to perform an action other than `write` or `serve`,
+say `knit requirejs`, Knit will assume you mean `knit write
+requirejs`. This allows you to use Knit as a library downloader by
+writing your resource files appropriately. `knit-common` ships with
+`httpget`, `httpsget`, and `github` handlers for downloading
+files. Knit ships with a small set of resource files that use these to
+download common libraries. For example:
+
+    knit requirejs 1.0.4 text domReady
+
+would download require.js, text.js, and domReady.js to the current
+folder (where text and domReady are RequireJS plugins). Knit ships
+with the below resource files by default. Use them without argument to
+get usage help (e.g. `knit jquery`):
+
+* `requirejs`
+* `jquery`
+* `backbone-amd`
+* `underscore-amd`
+
+This approach can of course be used to create nested file
+structures. You might want to create a resource file for a *AMD
+Backbone project template* that would download the libraries and write
+required files with appropriate content (`index.html`, `main.js`,
+`knit.coffee`, and so on) to a new project folder.
+
 Watching files vs. serving dynamically
 --------------------------------------
 
@@ -209,7 +238,7 @@ Resource files can use the `knit.log`
 [Winston](https://github.com/flatiron/winston) logger with `syslog`
 levels.
 
- ### Options for `server`
+### Options for `server`
 
 Server options are set by setting properties of `exports.server` in
 the resource file. The following options are available:
