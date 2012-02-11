@@ -9,14 +9,14 @@ resolve = (fullModuleName) ->
     undefined
 
 exports.load = (name) ->
-  # name is the config name. This could be undefined if the user
-  # provides no explicit name, in which case the config file should be
-  # assumed to be a knit file in the current directory.
+  # name is the resource module name. This could be undefined if the
+  # user provides no explicit name, in which case the resource file
+  # should be assumed to be a knit file in the current directory.
 
   candidates = [] # List of module names to try
 
   # Now put the various module location possibilities in candidates.
-  # We do not want normal node modules to be confused with config
+  # We do not want normal node modules to be confused with resource
   # modules so we look for them in specific locations.
 
   if name?
@@ -64,9 +64,9 @@ exports.load = (name) ->
   else
     try
       delete require.cache[resolved]
-      config = require resolved
-      config.FILENAME = resolved
-      config
+      resources = require resolved
+      resources.FILENAME = resolved
+      resources
     catch err
       log.error "Could not load resource file '#{ resolved }':"
       log.error "#{ err }"
