@@ -25,13 +25,13 @@ exports.load = (name) ->
     # Do not include current directory since this would pick up any
     # .js/.coffee file by the given name and that's not what we want
     # when we have library getters named things like 'jquery'.
-    # candidates.push (path.resolve "./#{ name }")
+    # candidates.push (path.resolve ".", name")
 
     # ~/.knit/ if we have a HOME environment variable
     if process.env.HOME
-      candidates.push (path.resolve "#{ process.env.HOME }/.knit/#{ name }")
+      candidates.push path.resolve("#{ process.env.HOME }/.knit/", name)
     # Knit paths
-    candidates.push(path.resolve(path.join(p, name))) for p in knitPaths
+    candidates.push path.resolve(p, name) for p in knitPaths
     # Make it easy to bundle standard resource files with the main
     # Knit distribution. These might try to import modules that are
     # not installed (so would exit with an error, which is fine).
@@ -42,9 +42,9 @@ exports.load = (name) ->
     next = path.resolve '.'
     while dir != next
       dir = next
-      next = path.resolve (path.join dir, '..')
-      candidates.push(path.resolve (path.join dir, 'knit'))
-      candidates.push(path.resolve (path.join dir, '.knit'))
+      next = path.resolve(dir, '..')
+      candidates.push path.resolve(dir, 'knit')
+      candidates.push path.resolve(dir, '.knit')
       # Set working directory to that of the resource file
       process.chdir(path.dirname resolved)
 
@@ -56,10 +56,9 @@ exports.load = (name) ->
   if not resolved
     if name
       log.error "No resource module '#{ name }' found at:"
-      log.error "#{ file }" for file in candidates
     else
       log.error "No resource module found at any of the default locations:"
-      log.error "#{ file }" for file in candidates
+    log.error "#{ file }" for file in candidates
     process.exit(1)
   else
     try
