@@ -7,7 +7,7 @@ resources     = require './resources'
 {flatten}     = require './flatten'
 log           = require './log'
 
-VERSION = '0.5.0'
+VERSION = '0.6.0-dev'
 
 showUsage = () ->
   # Help should probably not be logged to logger, just print to console
@@ -48,52 +48,45 @@ if params?.version
   action = 'version'
 
 # Check for errors
-if params?.action # action parameter not allowed
-  errors.push("--action is a reserved parameter. Please use an alternative.")
-if params?.args # args parameter not allowed
+if params?.args # args parameter not allowed since used for positionals
   errors.push("--args is a reserved parameter. Please use an alternative.")
-if params?.log # log parameter not allowed
-  errors.push("--log is a reserved parameter. Please use an alternative.")
 
 if errors.length > 0
   # Display errors and exit
   log.error "#{ error }" for error in errors
 else
-  # Resource files can access command line params from the global
-  # variable 'knit'. For example: compress: knit?.compress ? false
-  global.knit = params
-  global.knit.log = log # Give resource files access to logger
-  global.knit.action ?= action # Action available to resource files
-  global.knit.args = positionals # Provide positional arguments as args
+  # Resource files can access command line params from an object the
+  # resources function they should export get passed.
+  knit = params
+  knit.action ?= action # Action available to resource files
+  knit.args = positionals # Provide positional arguments as args
   # NOTE: Positionals thus only make sense with an explicit resource name.
 
   switch action
-    when undefined then showUsage()
+    when undefined
+      showUsage()
+      log.debug "SHOULD ALSO SHOW LIST OF CONFIG FILES ON PATH"
     when 'version' then console.info "#{ VERSION }" # Output, not log
     when 'help' then showUsage()
-    when 'serve'
-      if positionals.length >= 1
-        resourceName = positionals.shift()
-      server = require './server'
-      resource = -> resources.load resourceName # Reload each each request
-      initialResource = resource()
-      log.debug "Resource file: #{ initialResource.FILENAME }"
-      log.debug "Working dir: #{ process.cwd() }"
-      server.serve(initialResource.server, -> flatten resource().resources)
-    when 'write'
-      if positionals.length >= 1
-        resourceName = positionals.shift()
-      writer = require './writer'
-      resource = resources.load resourceName # Only load once
-      log.debug "Resource file: #{ resource.FILENAME }"
-      log.debug "Working dir: #{ process.cwd() }"
-      writer.write(resource.writer, flatten resource.resources)
     else
-      # If action is none of the above, assume 'write' action with
-      # resource file of the 'action' name.
-      resourceName = action
-      writer = require './writer'
-      resource = resources.load resourceName # Only load once
-      log.debug "Resource file: #{ resource.FILENAME }"
+      # If action is neither 'write' nor 'serve' then assume write
+      # action with a resource file of the 'action' name.
+      if action != 'write' and action != 'serve'
+        resourceName = action
+        action = 'write'
+      else if positionals.length >= 1
+        resourceName = positionals.shift()
+      resource = resources.load resourceName
       log.debug "Working dir: #{ process.cwd() }"
-      writer.write(resource.writer, flatten resource.resources)
+      log.debug "Resource: #{ resource.NAME or 'NO NAME' } (#{ resource.FILENAME })"
+      log.debug "Description: #{ resource.DESCRIPTION or 'NO DESCRIPTION' }"
+      if action == 'serve'
+        server = require './server'
+        server.serve(
+          resource.server(action, knit, log),
+          flatten resource.resources(action, knit, log))
+      else
+        writer = require './writer'
+        writer.write(
+          resource.writer(action, knit, log),
+          flatten resource.resources(action, knit, log))
