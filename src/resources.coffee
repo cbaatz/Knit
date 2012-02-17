@@ -4,56 +4,77 @@ log = require './log'
 
 resolve = (fullModuleName) ->
   try
-    require.resolve fullModuleName
+    modulePath = require.resolve fullModuleName
+    moduleName = path.basename modulePath
+    moduleName = path.basename moduleName, path.extname(moduleName)
+    [moduleName, modulePath]
   catch err
     undefined
 
-exports.load = (name) ->
-  # name is the resource module name. This could be undefined if the
-  # user provides no explicit name, in which case the resource file
-  # should be assumed to be a knit file in the current directory.
-
-  candidates = [] # List of module names to try
-
-  # Now put the various module location possibilities in candidates.
+findCandidates = () ->
   # We do not want normal node modules to be confused with resource
-  # modules so we look for them in specific locations.
+  # modules so we look for them in specific locations and check that
+  # they export a 'resources' function, and have a NAME and
+  # DESCRIPTION.
 
-  if name?
-    knitPaths = process.env.KNIT_PATH?.split(':') or []
+  candidates = [] # List of available modules
 
-    # Do not include current directory since this would pick up any
-    # .js/.coffee file by the given name and that's not what we want
-    # when we have library getters named things like 'jquery'.
-    # candidates.push (path.resolve ".", name")
+  # Only include 'knit' and '.knit' modules from current directory.
+  candidates.push(path.resolve './knit')
+  candidates.push(path.resolve './.knit')
 
-    # ~/.knit/ if we have a HOME environment variable
-    if process.env.HOME
-      candidates.push path.resolve("#{ process.env.HOME }/.knit/", name)
-    # Knit paths
-    candidates.push path.resolve(p, name) for p in knitPaths
-    # Make it easy to bundle standard resource files with the main
-    # Knit distribution. These might try to import modules that are
-    # not installed (so would exit with an error, which is fine).
-    knitDir = path.dirname process.mainModule.filename
-    candidates.push (path.join knitDir, "../contrib/#{ name }")
-  else
-    # Look for default knit resource file and use that as working dir
-    next = path.resolve '.'
-    while dir != next
-      dir = next
-      next = path.resolve(dir, '..')
-      candidates.push path.resolve(dir, 'knit')
-      candidates.push path.resolve(dir, '.knit')
-      # Set working directory to that of the resource file
-      process.chdir(path.dirname resolved)
+  # ~/.knit/ if we have a HOME environment variable
+  if process.env.HOME
+    knithome = path.resolve("#{ process.env.HOME }/.knit/")
+    candidates.push path.resolve(knithome, file) for file in fs.readdirSync(knithome)
 
-  # Find first existing module
+  # Knit paths
+  for p in (process.env.KNIT_PATH?.split(':') or [])
+    do (p) ->
+      candidates.push path.resolve(p, file) for file in fs.readdirSync(p)
+
+  # Make it easy to bundle standard resource files with the main Knit
+  # distribution.
+  contrib = path.resolve(path.dirname(process.mainModule.filename), '../contrib')
+  candidates.push path.resolve(contrib, f) for f in fs.readdirSync(contrib)
+  candidates
+
+loadModuleTriples = (candidates) ->
+  # Try to load candidates and check that they export NAME and resources
   paths = (resolve n for n in candidates)
-  paths = (p for p in paths when p?)
-  resolved = paths[0]
+  moduleTriples = []
+  for tuple in paths
+    do (tuple) ->
+      if tuple?
+        [n, p] = tuple
+        try
+          delete require.cache[p]
+          module = require p
+          if module?.NAME? and (typeof module?.resources) == 'function'
+            moduleTriples.push([n, p, module])
+        catch e
+          undefined
+  moduleTriples
 
-  if not resolved
+exports.list = () ->
+  loadModuleTriples(findCandidates())
+
+exports.load = (name) ->
+  matching = []
+  candidates = findCandidates()
+  for [moduleName, modulePath, module] in loadModuleTriples(candidates)
+    do (moduleName, modulePath, module) ->
+      if name == moduleName
+        matching.push([modulePath, module])
+      else if moduleName == 'knit' or moduleName == '.knit'
+        matching.push([modulePath, module])
+
+  # Pick first matching
+  [modulePath, module] = matching[0] or [null, null]
+  # Set working directory to that of the resource file
+  process.chdir(path.dirname modulePath)
+
+  if not modulePath
     if name
       log.error "No resource module '#{ name }' found at:"
     else
@@ -61,12 +82,5 @@ exports.load = (name) ->
     log.error "#{ file }" for file in candidates
     process.exit(1)
   else
-    try
-      delete require.cache[resolved]
-      resources = require resolved
-      resources.FILENAME = resolved
-      resources
-    catch err
-      log.error "Could not load resource file '#{ resolved }':"
-      log.error "#{ err }"
-      process.exit(1)
+    module.FILENAME = modulePath
+    module

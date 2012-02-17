@@ -28,6 +28,12 @@ showUsage = () ->
   console.info "    -f             Sets option named 'f' to true."
   console.info ""
 
+showAvailableResources = () ->
+  console.info "Available resource modules (if a name appears more than once, the first in the list will be picked):"
+  for [moduleName, modulePath, module] in resources.list()
+    do (moduleName, modulePath, module) ->
+      console.info "#{ moduleName }: #{ module.NAME }"
+
 # Parse command
 process.argv.shift() # Shave off coffee/node command
 [program, params, positionals] = cli.parse(process.argv)
@@ -65,7 +71,7 @@ else
   switch action
     when undefined
       showUsage()
-      log.debug "SHOULD ALSO SHOW LIST OF CONFIG FILES ON PATH"
+      showAvailableResources()
     when 'version' then console.info "#{ VERSION }" # Output, not log
     when 'help' then showUsage()
     else
