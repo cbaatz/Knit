@@ -1,14 +1,14 @@
 http = require 'http'
-p = require 'path'
-log = require './log'
+p    = require 'path'
+log  = require './log'
 
-cleanRoutes = (routes) ->
+cleanResources = (resources) ->
   # Ensure paths start with '/'
   rs = {}
-  rs[p.resolve '/', path] = handler for path, handler of routes
+  rs[p.resolve '/', path] = handler for path, handler of resources
   rs
 
-exports.serve = (config, routes) ->
+exports.serve = (config, resources) ->
   config            ?= {}
   config?.port      ?= 8081
   config?.proxyPort ?= 8080
@@ -16,32 +16,32 @@ exports.serve = (config, routes) ->
   config?.proxyHost ?= '127.0.0.1'
   proxyName = "#{ config.proxyHost }:#{ config.proxyPort }"
 
-  if typeof(routes) == 'function'
-    loadRoutes = -> cleanRoutes routes()
+  if typeof(resources) == 'function'
+    loadResources = -> cleanResources resources()
   else
-    cleaned = cleanRoutes routes
-    loadRoutes = -> cleaned
+    cleaned = cleanResources resources
+    loadResources = -> cleaned
 
-  startServer config, loadRoutes
+  startServer config, loadResources
 
   # TODO: Write a previewer which reads content and headers to a memory stream
   log.info "Knit serving at #{ config.host }:#{ config.port }:"
-  log.info "#{ path }" for path, handler of loadRoutes() # TODO: mime-type and size
+  log.info "#{ path }" for path, handler of loadResources() # TODO: mime-type and size
   log.info "otherwise proxy for #{ proxyName }"
 
-startServer = (config, loadRoutes) ->
+startServer = (config, loadResources) ->
   proxyName = "#{ config.proxyHost }:#{ config.proxyPort }"
   http.createServer((req, res) ->
-    routes = loadRoutes()
+    resources = loadResources()
     url = req.url
-    if req.url of routes # then we should handle the request
+    if req.url of resources # then we should handle the request
       # Print status message for Knit request
       req.on('end', () -> log.info "#{ req.method } #{ req.url }")
       # Set default headers before passing on to handler
       res.setHeader('Cache-Control', 'no-cache')
       res.setHeader('Content-Type', 'text/plain')
-      # Serve resources specified in routes
-      handler = routes[url]
+      # Serve resources specified in resources
+      handler = resources[url]
       # Add convenience method to set mime-type
       res.setMime = (mime) -> this.setHeader('Content-Type', mime)
       res.endWithMime = (data, mime) ->

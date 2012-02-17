@@ -26,7 +26,7 @@ masqueradeAsHttpResponse = (stream) ->
   stream.endWithMime = (d, m) -> this.end(d)
   stream
 
-exports.write = (config, routes) ->
+exports.write = (config, resources) ->
 
   config ?= {}
   config.root ?= '.' # What folder should we write to?
@@ -39,7 +39,7 @@ exports.write = (config, routes) ->
   log.debug "Writer output directory (relative): #{ config.root }"
   log.debug "Writer output directory (absolute): #{ buildDir }"
 
-  for path, handler of routes
+  for path, handler of resources
     do (path, handler) ->
       fullFilePath = p.join buildDir, path
 

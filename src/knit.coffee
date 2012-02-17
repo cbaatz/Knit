@@ -4,7 +4,7 @@ path          = require 'path'
 fs            = require 'fs'
 cli           = require './cli'
 resources     = require './resources'
-routes        = require './routes'
+{flatten}     = require './flatten'
 log           = require './log'
 
 VERSION = '0.5.0'
@@ -79,7 +79,7 @@ else
       initialResource = resource()
       log.debug "Resource file: #{ initialResource.FILENAME }"
       log.debug "Working dir: #{ process.cwd() }"
-      server.serve(initialResource.server, -> routes.flatten resource().routes)
+      server.serve(initialResource.server, -> flatten resource().resources)
     when 'write'
       if positionals.length >= 1
         resourceName = positionals.shift()
@@ -87,7 +87,7 @@ else
       resource = resources.load resourceName # Only load once
       log.debug "Resource file: #{ resource.FILENAME }"
       log.debug "Working dir: #{ process.cwd() }"
-      writer.write(resource.writer, routes.flatten resource.routes)
+      writer.write(resource.writer, flatten resource.resources)
     else
       # If action is none of the above, assume 'write' action with
       # resource file of the 'action' name.
@@ -96,4 +96,4 @@ else
       resource = resources.load resourceName # Only load once
       log.debug "Resource file: #{ resource.FILENAME }"
       log.debug "Working dir: #{ process.cwd() }"
-      writer.write(resource.writer, routes.flatten resource.routes)
+      writer.write(resource.writer, flatten resource.resources)
