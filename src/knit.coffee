@@ -80,7 +80,9 @@ else
         action = 'write'
       else if positionals.length >= 1
         resourceName = positionals.shift()
-
+      # Get current working directory before it possibly changes so we
+      # can tell writer about it.
+      cwd = process.cwd()
       module = resources.load resourceName
       log.debug "Working dir: #{ process.cwd() }"
       log.debug "Resource:    #{ module.NAME or 'NO NAME' } (#{ module.FILENAME })"
@@ -88,4 +90,4 @@ else
       if action == 'serve'
         require('./server').serve(module, action, knit, log)
       else
-        require('./writer').write(module, action, knit, log)
+        require('./writer').write(module, action, knit, log, cwd)

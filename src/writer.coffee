@@ -15,13 +15,13 @@ ensureDirs = (path, log) ->
         log.info "Created directory '#{ dir }' in #{ previous }"
       previous = current
 
-exports.write = (module, action, knit, log) ->
-  config           =  module?.writer(action, knit, log) or {}
+exports.write = (module, action, knit, log, cwd) ->
+  config           = (module?.writer or () -> {})(action, knit, log)
   config.root      ?= '.'   # What folder should we write to?
   config.overwrite ?= false # Should we replace existing files?
   config.makeDirs  ?= true  # Create intermediate dirs if they don't
                             # exist?
-  buildDir         =  p.join (p.resolve config.root), '/'
+  buildDir         =  p.resolve cwd, config.root
 
   log.debug "Writer output directory (relative): #{ config.root }"
   log.debug "Writer output directory (absolute): #{ buildDir }"
