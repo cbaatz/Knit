@@ -25,3 +25,9 @@ exports.flatten = (resources) ->
   flatResources = {}
   flatResources[resource] = handler for [resource, handler] in listResources resources
   flatResources
+
+exports.module = (module, action, knit, log) ->
+  if (typeof module.resources) == 'function'
+    exports.flatten module.resources(action, knit, log)
+  else
+    exports.flatten module.resources

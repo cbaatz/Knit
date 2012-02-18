@@ -1,8 +1,8 @@
-fs = require 'fs'
-p = require 'path'
-log = require './log'
+fs      = require 'fs'
+p       = require 'path'
+flatten = require './flatten'
 
-ensureDirs = (path) ->
+ensureDirs = (path, log) ->
   # Ensure path exists; that is, create dirs that don't exists.
   dirs = p.relative('/', p.resolve(path)).split('/')
   previous = '/'
@@ -26,20 +26,18 @@ masqueradeAsHttpResponse = (stream) ->
   stream.endWithMime = (d, m) -> this.end(d)
   stream
 
-exports.write = (config, resources) ->
-
-  config ?= {}
-  config.root ?= '.' # What folder should we write to?
+exports.write = (module, action, knit, log) ->
+  config           =  module?.writer(action, knit, log) or {}
+  config.root      ?= '.'   # What folder should we write to?
   config.overwrite ?= false # Should we replace existing files?
-  config.makeDirs ?= true # Create intermediate dirs if they don't
-                          # exist?
-
-  buildDir = p.join (p.resolve config.root), '/'
+  config.makeDirs  ?= true  # Create intermediate dirs if they don't
+                            # exist?
+  buildDir         =  p.join (p.resolve config.root), '/'
 
   log.debug "Writer output directory (relative): #{ config.root }"
   log.debug "Writer output directory (absolute): #{ buildDir }"
 
-  for path, handler of resources
+  for path, handler of flatten.module(module, action, knit, log)
     do (path, handler) ->
       fullFilePath = p.join buildDir, path
 
@@ -48,12 +46,10 @@ exports.write = (config, resources) ->
         # Path points to a directory
         log.warn "IGNORED #{ path }: can't write to a directory."
       else
-        if config.makeDirs
-          ensureDirs (p.dirname fullFilePath)
+        if config.makeDirs then ensureDirs p.dirname(fullFilePath), log
 
         # If we want to be able to control the file permissions, we
         # have two options:
-
         # 1. Wrap a buffer write stream around the fs write stream
         # 2. Add a method to change the permissions of the fs write
         # stream when it ends. This seems less secure.

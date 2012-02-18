@@ -1,38 +1,35 @@
-http = require 'http'
-p    = require 'path'
-log  = require './log'
+http    = require 'http'
+path    = require 'path'
+flatten = require './flatten'
 
 cleanResources = (resources) ->
-  # Ensure paths start with '/'
+  # Ensure urls start with '/'
   rs = {}
-  rs[p.resolve '/', path] = handler for path, handler of resources
+  rs[path.resolve '/', url] = handler for url, handler of resources
   rs
 
-exports.serve = (config, resources) ->
-  config            ?= {}
+exports.serve = (module, action, knit, log) ->
+  # Resource module is loaded initially and not reloaded if updated
+  # after server start. It would be neater to check if the resource
+  # file has changed on each request and reload it if it has.
+
+  config = module?.server(action, knit, log) or {}
   config?.port      ?= 8081
   config?.proxyPort ?= 8080
   config?.host      ?= '127.0.0.1'
   config?.proxyHost ?= '127.0.0.1'
   proxyName = "#{ config.proxyHost }:#{ config.proxyPort }"
 
-  if typeof(resources) == 'function'
-    loadResources = -> cleanResources resources()
-  else
-    cleaned = cleanResources resources
-    loadResources = -> cleaned
-
-  startServer config, loadResources
-
+  resources = cleanResources flatten.module(module, action, knit, log)
+  startServer(config, resources, log)
   # TODO: Write a previewer which reads content and headers to a memory stream
   log.info "Knit serving at #{ config.host }:#{ config.port }:"
-  log.info "#{ path }" for path, handler of loadResources() # TODO: mime-type and size
+  log.info "#{ path }" for path, handler of resources # TODO: mime-type and size
   log.info "otherwise proxy for #{ proxyName }"
 
-startServer = (config, loadResources) ->
+startServer = (config, resources, log) ->
   proxyName = "#{ config.proxyHost }:#{ config.proxyPort }"
   http.createServer((req, res) ->
-    resources = loadResources()
     url = req.url
     if req.url of resources # then we should handle the request
       # Print status message for Knit request

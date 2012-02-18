@@ -1,11 +1,9 @@
 require 'coffee-script' # For resolving uncompiled CoffeeScript requires
-
-path          = require 'path'
-fs            = require 'fs'
-cli           = require './cli'
-resources     = require './resources'
-{flatten}     = require './flatten'
-log           = require './log'
+path      = require 'path'
+fs        = require 'fs'
+cli       = require './cli'
+log       = require './log'
+resources = require './resources'
 
 VERSION = '0.6.0-dev'
 
@@ -61,13 +59,6 @@ if errors.length > 0
   # Display errors and exit
   log.error "#{ error }" for error in errors
 else
-  # Resource files can access command line params from an object the
-  # resources function they should export get passed.
-  knit = params
-  knit.action ?= action # Action available to resource files
-  knit.args = positionals # Provide positional arguments as args
-  # NOTE: Positionals thus only make sense with an explicit resource name.
-
   switch action
     when undefined
       showUsage()
@@ -75,24 +66,26 @@ else
     when 'version' then console.info "#{ VERSION }" # Output, not log
     when 'help' then showUsage()
     else
-      # If action is neither 'write' nor 'serve' then assume write
+      # Resource files can access command line params from an object
+      # the resources function they should export get passed.
+      knit = params
+      knit.args = positionals # Provide positional arguments as args
+      # NOTE: Positionals only make sense with an explicit resource
+      # name.
+
+      # If action is neither 'write' nor 'serve' then assume 'write'
       # action with a resource file of the 'action' name.
       if action != 'write' and action != 'serve'
         resourceName = action
         action = 'write'
       else if positionals.length >= 1
         resourceName = positionals.shift()
-      resource = resources.load resourceName
+
+      module = resources.load resourceName
       log.debug "Working dir: #{ process.cwd() }"
-      log.debug "Resource: #{ resource.NAME or 'NO NAME' } (#{ resource.FILENAME })"
-      log.debug "Description: #{ resource.DESCRIPTION or 'NO DESCRIPTION' }"
+      log.debug "Resource:    #{ module.NAME or 'NO NAME' } (#{ module.FILENAME })"
+      log.debug "Description: #{ module.DESCRIPTION or 'NO DESCRIPTION' }"
       if action == 'serve'
-        server = require './server'
-        server.serve(
-          resource.server(action, knit, log),
-          flatten resource.resources(action, knit, log))
+        require('./server').serve(module, action, knit, log)
       else
-        writer = require './writer'
-        writer.write(
-          resource.writer(action, knit, log),
-          flatten resource.resources(action, knit, log))
+        require('./writer').write(module, action, knit, log)

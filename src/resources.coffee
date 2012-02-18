@@ -1,6 +1,6 @@
-path = require 'path'
-fs   = require 'fs'
-log = require './log'
+path      = require 'path'
+fs        = require 'fs'
+log       = require './log'
 
 resolve = (fullModuleName) ->
   try
