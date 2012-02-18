@@ -4,6 +4,7 @@ exports.NAME = "jQuery downloader"
 exports.DESCRIPTION = ''
 
 exports.resources = (action, knit, log) ->
+  arg = knit.args.shift() or 'help'
   if arg == 'help' or knit.help or knit.h
     console.log "Knit resource file for downloading jQuery"
     console.log "Usage:   knit jquery VERSION"
@@ -13,5 +14,4 @@ exports.resources = (action, knit, log) ->
     version = arg
     min = if knit.min then '.min' else ''
     p = "/jquery-#{ version }#{ min }.js"
-    resources['jquery.js'] = handle.httpget('code.jquery.com', p)
-    resources
+    { 'jquery.js': handle.httpget('code.jquery.com', p) }
