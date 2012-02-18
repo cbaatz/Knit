@@ -11,7 +11,7 @@ a [Writable
 Stream](http://nodejs.org/docs/latest/api/streams.html#writable_Stream)
 to write its content to.
 
-Put differently, Knit can overlay your normal development webserver,
+Put differently, Knit can overlay your normal development web server,
 capture requests for static content, recompile it, and serve it. If
 the request is for another resource, Knit will proxy to your dynamic
 server.
@@ -41,13 +41,15 @@ Simple (not particularly useful) example:
 
 with `knit.coffee` containing (`s` is short for "stream")
 
-    exports.routes =
-      '/': (s) -> s.endWithMime('This is the data', 'text/plain')
-      '/favicon.ico': (s) ->
-        s.setHeader('Content-Type', 'image/vnd.microsoft.icon')
-        s.end('This is the data')
-      'robots.txt': (s) -> s.end('User-agent: *\nDisallow: /')
-      '/static/': {'hello.txt': (s) -> s.end('Hello, World!')}
+    exports.resources = (action, knit, log) ->
+      resources =
+        '/': (s) -> s.endWithMime('This is the data', 'text/plain')
+        '/favicon.ico': (s) ->
+          s.setHeader('Content-Type', 'image/vnd.microsoft.icon')
+          s.end('This is the data')
+        'robots.txt': (s) -> s.end('User-agent: *\nDisallow: /')
+        '/static/': {'hello.txt': (s) -> s.end('Hello, World!')}
+      resources
 
 then
 
@@ -71,15 +73,18 @@ the `/` resource):
     `-- static/hello.js
 
 The `knit.coffee` file is a normal CoffeeScript file that exports a
-'routes' object associating resource paths with a handler
-function. The route specification can be nested as seen above.
+'resources' function, taking an `action`, `knit` parameter object, and
+a `log`, to produce an object associating resource paths with a
+handler function. The resource/handler specification can be nested as
+seen above.
 
-The stream passed to the handler is either a
+The stream passed to the handler is either a slightly modified version
+of either the
 [http.ServerResponse](http://nodejs.org/docs/latest/api/http.html#http.ServerResponse)
 or a
 [fs.WriteStream](http://nodejs.org/docs/latest/api/fs.html#fs.WriteStream). They
 are extended with the convenience functions: `setMime(<mimetype>)` and
-`endWithMime(<data>, <mimetype>)`.
+`endWithMime(<data>, <mimetype>)` and also with the `log` object.
 
 Installation
 ------------
@@ -152,9 +157,10 @@ Knit allows you to specify your resources conditional on whether you
 are serving or writing content and any command line parameter you want
 to use. That is, Knit allows you to invent your own command-line
 parameters. Knit resource files are standard JavaScript or
-CoffeeScript node.js modules that get access to a global `knit` object
-containing the parameter values and logger. Thus, you have full
-control over how you construct your resources and handlers.
+CoffeeScript node.js modules that export a `resources(action, knit,
+log)` function which returns the resources object. The `knit` object
+passed to the function contains the parameter values. Thus, you have
+full control over how you construct your resources and handlers.
 
 You can optionally specify a resource definition module name on the
 command line; if you don't (`knit write` for example), Knit defaults
@@ -174,30 +180,35 @@ following locations (in order):
 Let's look at an example of how you might construct a resources file
 (in CoffeeScript for brevity):
 
-    exports.routes =
-      '/': (s) -> s.endWithMime('<h1>Hello, Stranger!</h1>', "text/html")
-      'hello.txt': (s) -> s.end('Hello, Knit!')
+    exports.resources = (action, knit, log) ->
+      resources =
+        '/': (s) -> s.endWithMime('<h1>Hello, Stranger!</h1>', "text/html")
+        'hello.txt': (s) -> s.end('Hello, Knit!')
 
-    if knit.action == 'write'
-      exports.routes['/index.html'] = exports.routes['/']
-      delete exports.routes['/']
+      if action == 'write'
+        resources['/index.html'] = resources['/']
+        delete resources['/']
 
     # Server settings
-    exports.server =
-      port: Number(knit?.port or 8080)
-      host: '127.0.0.1'
-      proxyPort: 8000
-      proxyHost: '127.0.0.1'
+    exports.server = (action, knit, log) ->
+      config =
+        port: Number(knit?.port or 8080)
+        host: '127.0.0.1'
+        proxyPort: 8000
+        proxyHost: '127.0.0.1'
+      config
 
     # Writer settings
-    exports.writer =
-      root: knit?.buildDir ? './build' # Set build folder if not specified
-      overwrite: true # Replace existing files
-      makeDirs: true # Create intermediate dirs if they don't exist
+    exports.writer = (action, knit, log) ->
+      config =
+        root: knit?.buildDir ? './build' # Set build folder if not specified
+        overwrite: true # Replace existing files
+        makeDirs: true # Create intermediate dirs if they don't exist
+      config
 
-First, we see that you should export your resources as
-`exports.routes`. We can then change the routes depending on whether
-we are writing or serving the resources by accessing `knit.action`. In
+First, we see that you should export your resources function as
+`exports.resources`. We can then change the paths depending on whether
+we are writing or serving the resources by looking at `action`. In
 addition, we can set options for the server and writer. In this case
 we can set the writer root on the command-line with:
 
@@ -208,12 +219,11 @@ we can set the writer root on the command-line with:
 Knit allows you to use (almost) arbitrary command line parameters to
 control the behaviour of your resource file. For example,
 
-    $ knit serve --no-obscure --port=8000 --compress -a
+    $ knit serve myresources hello --no-obscure --port=8000 --compress -a
 
 will set the global `knit` object to:
 
-    { 'action':   'serve',
-      'log':      <winston logger>,
+    { 'args':     ['hello'],
       'obscure':  false,
       'compress': true,
       'a':        true,
@@ -221,11 +231,8 @@ will set the global `knit` object to:
 
 It is worth reiterating that there is nothing special about the
 command line parameters above. You make use of them as you see fit in
-your resource file. `--help`, `--version`, `--action`, `--args`, and
-`--log` are reserved for use by Knit.
-
-`--action` is reserved because `knit.action` is set to `serve` or
-`write` depending on the action specified.
+your resource file. `--help`, `--version`, `--args`, and are reserved
+for use by Knit.
 
 `--args` is reserved for making positional arguments available to
 resource files. Note that the first positional argument after the
@@ -233,19 +240,17 @@ command is interpreted as a resource module name so positional
 arguments only make sense when explicitly specifying a resource module
 name.
 
-`--log` is reserved for making the Winston logger available to
-resource files.
-
 ### Logging
 
-Resource files can use the `knit.log`
+Resource files can use the `log`
 [Winston](https://github.com/flatiron/winston) logger with `syslog`
 levels.
 
 ### Options for `server`
 
-Server options are set by setting properties of `exports.server` in
-the resource file. The following options are available:
+Override standard server options by returning them from the
+`exports.server` function in the resource file. The following options
+are available:
 
 * `port` (`8081`): Knit port
 * `host` (`127.0.0.1`): Knit hostname
@@ -254,8 +259,9 @@ the resource file. The following options are available:
 
 ### Options for `writer`
 
-Writer options are set by setting properties of `exports.writer` in
-the resource file. The following options are available:
+Override standard writer options by returning them from the
+`exports.writer` function in the resource file. The following options
+are available:
 
 * `root` (`.`): What directory should we write resources to?
 * `overwrite` (`false`): Should we replace existing files?
