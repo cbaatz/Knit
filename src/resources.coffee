@@ -19,9 +19,13 @@ findCandidates = () ->
 
   candidates = [] # List of available modules
 
-  # Only include 'knit' and '.knit' modules from current directory.
-  candidates.push(path.resolve './knit')
-  candidates.push(path.resolve './.knit')
+  # Only include 'knit' and '.knit' modules from current
+  # directory. Explicit endings to avoid loading the "knit" project
+  # (infinite loop!).
+  candidates.push(path.resolve './knit.js')
+  candidates.push(path.resolve './.knit.js')
+  candidates.push(path.resolve './knit.coffee')
+  candidates.push(path.resolve './.knit.coffee')
 
   # ~/.knit/ if we have a HOME environment variable
   if process.env.HOME
