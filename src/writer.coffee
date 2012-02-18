@@ -1,6 +1,7 @@
-fs      = require 'fs'
-p       = require 'path'
-flatten = require './flatten'
+fs         = require 'fs'
+p          = require 'path'
+flatten    = require './flatten'
+knitstream = require './knitstream'
 
 ensureDirs = (path, log) ->
   # Ensure path exists; that is, create dirs that don't exists.
@@ -13,18 +14,6 @@ ensureDirs = (path, log) ->
         fs.mkdirSync(current)
         log.info "Created directory '#{ dir }' in #{ previous }"
       previous = current
-
-masqueradeAsHttpResponse = (stream) ->
-  stream.writeContinue = ->
-  stream.writeHead = ->
-  stream.statusCode = 0
-  stream.setHeader = ->
-  stream.getHeader = ->
-  stream.removeHeader = ->
-  stream.addTrailers = ->
-  stream.setMime = ->
-  stream.endWithMime = (d, m) -> this.end(d)
-  stream
 
 exports.write = (module, action, knit, log) ->
   config           =  module?.writer(action, knit, log) or {}
@@ -55,7 +44,7 @@ exports.write = (module, action, knit, log) ->
         # stream when it ends. This seems less secure.
 
         if config.overwrite or not (p.existsSync fullFilePath)
-          res = masqueradeAsHttpResponse fs.createWriteStream(fullFilePath)
+          res = knitstream.fromWriteStream fs.createWriteStream(fullFilePath)
           res.on('close', () ->
             log.info "WROTE #{ fullFilePath }: #{ res.bytesWritten } bytes.")
           res.on('error', (err) ->

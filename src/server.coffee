@@ -1,6 +1,7 @@
-http    = require 'http'
-path    = require 'path'
-flatten = require './flatten'
+http       = require 'http'
+path       = require 'path'
+flatten    = require './flatten'
+knitstream = require './knitstream'
 
 cleanResources = (resources) ->
   # Ensure urls start with '/'
@@ -9,9 +10,10 @@ cleanResources = (resources) ->
   rs
 
 exports.serve = (module, action, knit, log) ->
-  # Resource module is loaded initially and not reloaded if updated
-  # after server start. It would be neater to check if the resource
-  # file has changed on each request and reload it if it has.
+  # TODO: Resource module is loaded initially and not reloaded if
+  # updated after server start. It would be neater to check if the
+  # resource file has changed on each request and reload it if it
+  # has. This would not include server configuration.
 
   config = module?.server(action, knit, log) or {}
   config?.port      ?= 8081
@@ -32,19 +34,16 @@ startServer = (config, resources, log) ->
   http.createServer((req, res) ->
     url = req.url
     if req.url of resources # then we should handle the request
-      # Print status message for Knit request
-      req.on('end', () -> log.info "#{ req.method } #{ req.url }")
-      # Set default headers before passing on to handler
-      res.setHeader('Cache-Control', 'no-cache')
-      res.setHeader('Content-Type', 'text/plain')
       # Serve resources specified in resources
       handler = resources[url]
-      # Add convenience method to set mime-type
-      res.setMime = (mime) -> this.setHeader('Content-Type', mime)
-      res.endWithMime = (data, mime) ->
-        this.setHeader('Content-Type', mime)
-        this.end(data)
-      handler res
+      # Print status message for Knit request
+      req.on('end', () -> log.info "#{ req.method } #{ req.url }")
+      # Create a knit stream out of the response
+      stream = knitstream.fromHTTPResponse(res)
+      # Set default headers before passing on to handler
+      stream.setHeader('Cache-Control', 'no-cache')
+      stream.setHeader('Content-Type', 'text/plain')
+      handler stream
     else # pass request on to proxy
       # Print status message for Proxy request
       req.on('end', () -> log.debug "#{ req.method } #{ proxyName }#{ req.url }")

@@ -1,6 +1,6 @@
 {
     "name": "knit",
-    "version": "0.5.0",
+    "version": "0.6.0-dev",
     "description": "Static content development proxy and helper.",
     "author": "Carl Baatz",
     "licenses": [
