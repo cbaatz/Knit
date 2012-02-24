@@ -30,7 +30,8 @@ findCandidates = () ->
   # ~/.knit/ if we have a HOME environment variable
   if process.env.HOME
     knithome = path.resolve("#{ process.env.HOME }/.knit/")
-    candidates.push path.resolve(knithome, file) for file in fs.readdirSync(knithome)
+    if path.existsSync(knithome) and fs.statSync(knithome).isDirectory()
+      candidates.push path.resolve(knithome, file) for file in fs.readdirSync(knithome)
 
   # Knit paths
   for p in (process.env.KNIT_PATH?.split(':') or [])

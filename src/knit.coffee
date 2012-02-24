@@ -5,7 +5,7 @@ cli       = require './cli'
 log       = require './log'
 resources = require './resources'
 
-VERSION = '0.6.0'
+VERSION = '0.6.1'
 
 showUsage = () ->
   # Help should probably not be logged to logger, just print to console
