@@ -55,7 +55,8 @@ loadModuleTriples = (candidates) ->
         try
           delete require.cache[p]
           module = require p
-          if module?.NAME? and (typeof module?.resources) == 'function'
+          if (typeof module?.resources) == 'function'
+            module.NAME = module.NAME or n
             moduleTriples.push([n, p, module])
         catch e
           undefined
