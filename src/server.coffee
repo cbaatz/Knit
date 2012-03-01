@@ -15,7 +15,7 @@ exports.serve = (module, action, knit, log) ->
   # resource file has changed on each request and reload it if it
   # has. This would not include server configuration.
 
-  config = module?.server(action, knit, log) or {}
+  config            = (module?.server or -> {})(action, knit, log)
   config?.port      ?= 8081
   config?.proxyPort ?= 8080
   config?.host      ?= '127.0.0.1'

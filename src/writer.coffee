@@ -16,7 +16,7 @@ ensureDirs = (path, log) ->
       previous = current
 
 exports.write = (module, action, knit, log, cwd) ->
-  config           = (module?.writer or () -> {})(action, knit, log)
+  config           = (module?.writer or -> {})(action, knit, log)
   config.root      ?= '.'   # What folder should we write to?
   config.overwrite ?= false # Should we replace existing files?
   config.makeDirs  ?= true  # Create intermediate dirs if they don't
