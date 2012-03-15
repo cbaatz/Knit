@@ -48,6 +48,8 @@ startServer = (config, resources, log) ->
       # Print status message for Proxy request
       req.on('end', () -> log.debug "#{ req.method } #{ proxyName }#{ req.url }")
       # Set proxy request details
+      # Make sure we update the requested host
+      req.headers['host'] = proxyName
       poptions =
         host: config.proxyHost
         port: config.proxyPort
