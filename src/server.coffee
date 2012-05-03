@@ -1,5 +1,6 @@
 http       = require 'http'
 path       = require 'path'
+{parse}    = require 'url'
 flatten    = require './flatten'
 knitstream = require './knitstream'
 
@@ -32,12 +33,13 @@ exports.serve = (module, action, knit, log) ->
 startServer = (config, resources, log) ->
   proxyName = "#{ config.proxyHost }:#{ config.proxyPort }"
   http.createServer((req, res) ->
-    url = req.url
-    if req.url of resources # then we should handle the request
+    # Ignore querey parameters when checking for local file matches.
+    cleanUrl = parse(req.url, true).pathname;
+    if cleanUrl of resources # then we should handle the request
       # Serve resources specified in resources
-      handler = resources[url]
+      handler = resources[cleanUrl]
       # Print status message for Knit request
-      req.on('end', () -> log.info "#{ req.method } #{ req.url }")
+      req.on('end', () -> log.info "#{ req.method } #{ cleanUrl }")
       # Create a knit stream out of the response
       stream = knitstream.fromHTTPResponse(res)
       # Set default headers before passing on to handler
