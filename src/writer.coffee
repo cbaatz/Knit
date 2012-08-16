@@ -10,7 +10,7 @@ ensureDirs = (path, log) ->
   for dir in dirs
     do (dir) ->
       current = p.join previous, dir
-      if not p.existsSync(current)
+      if not fs.existsSync(current)
         fs.mkdirSync(current)
         log.info "Created directory '#{ dir }' in #{ previous }"
       previous = current
@@ -43,7 +43,7 @@ exports.write = (module, action, knit, log, cwd) ->
         # 2. Add a method to change the permissions of the fs write
         # stream when it ends. This seems less secure.
 
-        if config.overwrite or not (p.existsSync fullFilePath)
+        if config.overwrite or not (fs.existsSync fullFilePath)
           res = knitstream.fromWriteStream fs.createWriteStream(fullFilePath)
           res.on('close', () ->
             log.info "WROTE #{ fullFilePath }: #{ res.bytesWritten } bytes.")
