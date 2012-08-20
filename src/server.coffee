@@ -57,6 +57,7 @@ startServer = (config, resources, log) ->
           length = length + (data?.length ? 0)
           this.setHeader('Content-Length', 0) # FIXME
           message.end.call(this)
+
       stream = knitstream.fromHTTPResponse(res)
       # Set default headers before passing on to handler
       stream.setHeader('Cache-Control', 'no-cache')
@@ -68,6 +69,15 @@ startServer = (config, resources, log) ->
       # Set proxy request details
       # Make sure we update the requested host
       req.headers['host'] = proxyName
+
+      if req.method == 'DELETE'
+        # node-http-proxy will add a Transfer Encoding header to
+        # the outgoing DELETE request since it does not detect any
+        # body for it. (http://serverfault.com/questions/396020/content-length-and-transfer-encoding-chunked-nginx-node-http-proxy)
+        # This will make nginx balk on the request.
+        # Added a content-length header will prevent this from happening.
+        req.headers['Content-Length'] = 0
+
       proxy.proxyRequest(req, res, {
         host: config.proxyHost,
         port: config.proxyPort
