@@ -93,9 +93,7 @@ Installation requires
 [node.js](https://github.com/joyent/node/wiki/Installation) and
 [npm](http://npmjs.org/) and can then be accomplished with
 
-    git clone git://github.com/cbaatz/knit.git
-    cd knit
-    npm install -g
+    npm install git://github.com/cbaatz/knit.git
 
 Knit as a library downloader or template writer
 -----------------------------------------------
