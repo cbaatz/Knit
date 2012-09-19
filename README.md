@@ -1,10 +1,44 @@
 Knit
 ====
 
-Knit helps you compile static resources both for serving during development and
-for writing to disk for deployment.
+*Knit 0.8 introduced significant changes to the API and usage
+ philosophy. Detailed documentation to come.*
 
-The core idea behind Knit is that you define content generators and associate those with URLs which determine where to serve or write the compiled resources.
+Knit helps you define and generate structured static content for
+building or serving. For example, use it to serve single-page
+applications during development, build static websites, create
+parameterised documents, or generate config files.
+
+Knit tries to do little more than define resources in order to give
+you flexibility.  That is, we value transparency and do not try to
+hide every conceivable use-case behind a pretty interface.  Instead,
+you should use Knit together with relevant libraries
+([http-proxy](https://github.com/nodejitsu/node-http-proxy) and
+[optimist](https://github.com/substack/node-optimist) for example).
+
+Example usage
+-------------
+
+The below defines two simple resources
+    var knit = require('knit'),
+        less = require('knit-less'),
+        string = require('knit-string'),
+        httpProxy = require('http-proxy'),
+        url = require('url'),
+        structure, resources;
+
+    structure = knit.tree({
+        '/styles.css':  less('./styles/main.less', { paths: ['./styles'] }),
+        '/robots.txt':  string('User-agent: *\nDisallow:', 'text/plain')
+    });
+    resources = structure.build();
+
+    httpProxy.createServer(function (req, res, proxy) {
+        var generator = resources[url.parse(req.url).pathname];
+        if (generator) generator(res);
+        else proxy.proxyRequest(req, res, {
+                target: {host: 'example.com', port: 443, https: true}});
+    }).listen(8000);
 
 Installation
 ------------
@@ -13,28 +47,35 @@ Install in your project folder with [npm](http://npmjs.org/):
 
     npm install git://github.com/cbaatz/knit.git
 
-Example use cases
------------------
+Design
+------
 
-### Develop new styles for a remote blog
+Knit has two key concepts: structures and generators. A structure is
+an object with a `build()` function that returns a resource map
+(object) from paths to generators. A generator is a function that when
+given an HTTP response stream (or extended file stream) writes its
+content and headers to it.
 
-### Develop a static website with compiled content
+Neither structure or generator have special parent prototypes in order
+to not require third-party extension libraries to depend on Knit (this
+would be an issue in particular when `node_modules` is checked in to
+the repo).
 
-### Create a command-line tool for initialising projects
+API
+---
 
-Recommended Usage
------------------
+### Structures
 
-Create an executable ./knit file in CoffeeScript or JavaScript in your project
-folder that uses optimist to get command line parameters that you can use to
-create your own serve and build command using Knit as a library.
+- `knit.tree({ <prefix>: <generatorOrStructure> })`
+- `knit.files(<path>)`
 
-Logging
--------
+### Functions
 
-Resource files can use the `log`
-[Winston](https://github.com/flatiron/winston) logger with `syslog`
-levels.
+- `knit.createServer(<resourcesOrStructure>)`
+- `knit.write(<resourcesOrStructure>, <buildPath>, <config>)`
+  (`config.overwrite` is the only option).
+
+- generator.mode will be used when writing a file
 
 Watching files vs. serving dynamically
 --------------------------------------
@@ -54,9 +95,8 @@ recompiled?).
 and Windows, so your Linux solution might not work for those in your
 company working on Mac OS X.
 
-Knit expects handlers to perform this compilation as appropriate.
-Knit simply re-reads the resources file synchronously on each
-request. Does that make reloads incredibly slow? Personally I don't
-notice any particular lag as long as compression of JavaScript
-resources is turned off. Your milage may vary.
-
+Does that make reloads slow? It makes them slower, but nothing that I
+have found annoying during development *as long as JavaScript
+compression (e.g. UglifyJS) is turned off.* You should turn JavaScript
+compression on or off depending on whether you build or serve the
+resource. Your milage may vary.
