@@ -47,6 +47,13 @@ Install in your project folder with [npm](http://npmjs.org/):
 
     npm install git://github.com/cbaatz/knit.git
 
+Recommended Usage
+-----------------
+
+Create an executable ./knit file in CoffeeScript or JavaScript in your project
+folder that uses optimist to get command line parameters that you can use to
+create your own serve and build commands.
+
 Design
 ------
 
