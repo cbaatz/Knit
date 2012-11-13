@@ -11,3 +11,7 @@ exports.mapNames = require('./lib/map-names'); // mapNames(resources);
 exports.force = require('./lib/force'); // force(generator, callback);
 exports.write = require('./lib/write'); // write(resources, config, callback);
 exports.upload = require('./lib/upload'); // upload(resource, config, callback);
+
+// Export basic generator factories
+exports.file = require('./lib/factories/file');
+exports.string = require('./lib/factories/string');
