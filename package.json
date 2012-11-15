@@ -10,7 +10,8 @@
     "dependencies": {
         "stream-buffers": "~0.2.3",
         "async": "~0.1.22",
-        "mime": "~1.2.7"
+        "mime": "~1.2.7",
+        "colors": "~0.6.0"
     },
     "devDependencies": {
         "vows": "0.6.x"
